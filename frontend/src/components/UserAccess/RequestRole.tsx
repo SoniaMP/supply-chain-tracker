@@ -10,11 +10,21 @@ import {
   Typography,
 } from "@mui/material";
 
-import { CardLayout } from "../layouts";
-import { EUserRole } from "../interfaces";
+import { CardLayout } from "../../layouts";
+import { EUserRole } from "../../interfaces";
+import { useRegistry } from "@hooks/useRegistry";
 
 const RequestRole = () => {
   const [role, setRole] = useState<EUserRole | null>(null);
+  const { requestRole } = useRegistry();
+
+  function handleRequestRole() {
+    console.log("Solicitud de rol:", role);
+    requestRole(role!).catch((err) => {
+      console.error("Error al solicitar el rol:", err);
+      alert(`Error al solicitar el rol: ${err.message}`);
+    });
+  }
 
   return (
     <CardLayout>
@@ -78,7 +88,12 @@ const RequestRole = () => {
           </Typography>
         </Box>
 
-        <Button disabled={!role} fullWidth startIcon={<ArrowRight />}>
+        <Button
+          disabled={!role}
+          fullWidth
+          startIcon={<ArrowRight />}
+          onClick={handleRequestRole}
+        >
           Solicitar acceso
         </Button>
       </Stack>

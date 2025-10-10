@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Card,
@@ -14,11 +16,18 @@ import HubIcon from "@mui/icons-material/HubOutlined";
 import LockIcon from "@mui/icons-material/LockOpenOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
-import { useWallet } from "../context/metamask/provider";
-import { CardLayout } from "../layouts";
+import { useWallet } from "../../context/metamask/provider";
+import { CardLayout } from "../../layouts";
 
 const Login = () => {
-  const { isMetamaskInstalled, connectWallet } = useWallet();
+  const { account, isMetamaskInstalled, connectWallet } = useWallet();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (account) {
+      navigate("/dashboard");
+    }
+  }, [account, navigate]);
 
   return (
     <CardLayout>

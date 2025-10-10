@@ -7,14 +7,13 @@ import { fromDtoToUi } from "../../utils/accessAdapters";
 export const useGlobalState = () => {
   const [userInfo, setUserInfo] = useState<IAccountInfo | null>(null);
   const { account } = useWallet();
-  const registry = useRegistry();
+  const { registry } = useRegistry();
 
   useEffect(() => {
     if (!registry || !account) return;
     (async () => {
       const info: IAccountInfo = await registry.getAccountInfo(account);
       const accountInfo = fromDtoToUi(info);
-      console.log("AccountInfo: ", accountInfo);
       setUserInfo(accountInfo);
     })();
   }, [registry, account]);
