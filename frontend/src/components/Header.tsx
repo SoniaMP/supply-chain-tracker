@@ -1,13 +1,27 @@
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Stack,
+  Tooltip,
+} from "@mui/material";
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import { Link } from "react-router-dom";
 
-import { useWallet } from "../hooks/useWallet";
+import { HeaderChip } from "./styled";
+import { formatAddress } from "../utils";
+import { useWallet } from "../providers/metamask/provider";
 
 const Header = () => {
-  const { account, isConnecting, connectWallet, disconnectWallet } =
-    useWallet();
+  const {
+    account,
+    isConnecting,
+    isMetamaskInstalled,
+    connectWallet,
+    disconnectWallet,
+  } = useWallet();
 
   return (
     <AppBar position="static">
@@ -26,22 +40,27 @@ const Header = () => {
         </Box>
 
         {account ? (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button color="inherit" component={Link} to="/">
-              Inicio
-            </Button>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title={account} arrow>
+              <HeaderChip
+                label={formatAddress(account)}
+                size="medium"
+                variant="outlined"
+              />
+            </Tooltip>
             <Button
+              variant="outlined"
               color="inherit"
               onClick={disconnectWallet}
               startIcon={<LogoutIcon />}
             >
               Cerrar sesión
             </Button>
-          </Box>
+          </Stack>
         ) : (
           <Button
             onClick={connectWallet}
-            disabled={isConnecting}
+            disabled={!isMetamaskInstalled || isConnecting}
             loading={isConnecting}
             startIcon={<WalletIcon />}
           >

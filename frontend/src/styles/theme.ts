@@ -18,10 +18,19 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "#000000",
           boxShadow: "none",
-          borderBottom: "1px solid #e0e0e0",
-          color: "#333333",
+          borderBottom: "1px solid #f0f0f0",
+          color: "#ffffff",
+
+          ".MuiButtonBase-root ": {
+            color: "#ffffff",
+            border: "1px solid #e0e0e0",
+            "&:hover": {
+              backgroundColor: "#222222",
+              border: "1px solid #ffffff",
+            },
+          },
         },
       },
     },
@@ -40,7 +49,7 @@ const theme = createTheme({
     },
     MuiButton: {
       defaultProps: {
-        variant: "outlined",
+        variant: "contained",
       },
       styleOverrides: {
         root: {

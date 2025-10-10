@@ -5,14 +5,15 @@ import { BrowserProvider } from "ethers";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ethereum = (window as any).ethereum;
 
-export const useWallet = () => {
+export const useWalletState = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState("");
+  const isMetamaskInstalled = !!ethereum && ethereum.isMetaMask;
 
   const connectWallet = async () => {
-    if (!ethereum || !ethereum.isMetaMask) {
+    if (!isMetamaskInstalled) {
       setError("MetaMask is not installed");
       return;
     }
@@ -63,5 +64,12 @@ export const useWallet = () => {
     };
   }, [provider]);
 
-  return { account, isConnecting, connectWallet, disconnectWallet, error };
+  return {
+    account,
+    isConnecting,
+    isMetamaskInstalled,
+    connectWallet,
+    disconnectWallet,
+    error,
+  };
 };

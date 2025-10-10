@@ -5,12 +5,15 @@ import { ThemeProvider } from "@mui/material";
 
 import App from "./App";
 import theme from "./styles/theme";
+import MetamaskProvider from "./providers/metamask/provider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
-        <App />
+        <MetamaskProvider>
+          <App />
+        </MetamaskProvider>
       </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
