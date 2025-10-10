@@ -10,9 +10,10 @@ import {
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
-import { HeaderChip } from "./styled";
-import { formatAddress } from "../utils";
-import { useWallet } from "../providers/metamask/provider";
+import { HeaderChip } from "../styled";
+import { formatAddress } from "../../utils/helpers";
+import { useWallet } from "../../context/metamask/provider";
+import UserButtons from "./UserButtons";
 
 const Header = () => {
   const {
@@ -48,6 +49,7 @@ const Header = () => {
                 variant="outlined"
               />
             </Tooltip>
+            <UserButtons />
             <Button
               variant="outlined"
               color="inherit"

@@ -5,14 +5,17 @@ import { ThemeProvider } from "@mui/material";
 
 import App from "./App";
 import theme from "./styles/theme";
-import MetamaskProvider from "./providers/metamask/provider";
+import MetamaskProvider from "./context/metamask/provider";
+import GlobalProvider from "./context/global/provider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
         <MetamaskProvider>
-          <App />
+          <GlobalProvider>
+            <App />
+          </GlobalProvider>
         </MetamaskProvider>
       </ThemeProvider>
     </BrowserRouter>

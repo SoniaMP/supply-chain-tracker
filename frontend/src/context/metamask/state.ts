@@ -22,16 +22,18 @@ export const useWalletState = () => {
     try {
       const prov = new ethers.BrowserProvider(ethereum);
       await prov.send("eth_requestAccounts", []);
-      setProvider(prov);
 
       const sgn = await prov.getSigner();
       const acct = await sgn.getAddress();
+
+      setProvider(prov);
       setAccount(acct);
     } catch (err) {
       console.error(err);
       setError("Error connecting wallet");
     } finally {
       setIsConnecting(false);
+      setError("");
     }
   };
 
@@ -46,9 +48,19 @@ export const useWalletState = () => {
     const handleAccountsChanged = async (accounts: string[]) => {
       setIsConnecting(true);
       if (accounts.length === 0) {
-        setAccount(null);
+        disconnectWallet();
       } else {
-        setAccount(accounts[0]);
+        try {
+          const newProvider = new ethers.BrowserProvider(ethereum);
+          const signer = await newProvider.getSigner();
+          const newAccount = await signer.getAddress();
+
+          setProvider(newProvider);
+          setAccount(newAccount);
+        } catch (err) {
+          console.error("Error updating provider/account:", err);
+          setError("Error updating account");
+        }
       }
       setIsConnecting(false);
     };
@@ -68,6 +80,7 @@ export const useWalletState = () => {
     account,
     isConnecting,
     isMetamaskInstalled,
+    provider,
     connectWallet,
     disconnectWallet,
     error,

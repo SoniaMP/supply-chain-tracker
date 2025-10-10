@@ -14,7 +14,7 @@ import HubIcon from "@mui/icons-material/HubOutlined";
 import LockIcon from "@mui/icons-material/LockOpenOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
-import { useWallet } from "../providers/metamask/provider";
+import { useWallet } from "../context/metamask/provider";
 import { CardLayout } from "../layouts";
 
 const Login = () => {

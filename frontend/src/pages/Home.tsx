@@ -1,6 +1,6 @@
 import Login from "../components/Login";
 import RequestRole from "../components/RequestRole";
-import { useWallet } from "../providers/metamask/provider";
+import { useWallet } from "../context/metamask/provider";
 
 const Home = () => {
   const { account } = useWallet();

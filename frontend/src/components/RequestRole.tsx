@@ -40,10 +40,10 @@ const RequestRole = () => {
           sx={{ padding: 0 }}
           onChange={(e) => setRole(e.target.value as EUserRole)}
         >
-          <MenuItem value={EUserRole.MANUFACTURER}>Fabricante</MenuItem>
-          <MenuItem value={EUserRole.DISTRIBUTOR}>Distribuidor</MenuItem>
-          <MenuItem value={EUserRole.RETAILER}>Minorista</MenuItem>
           <MenuItem value={EUserRole.CONSUMER}>Consumidor</MenuItem>
+          <MenuItem value={EUserRole.PRODUCER}>Productor</MenuItem>
+          <MenuItem value={EUserRole.RETAILER}>Minorista</MenuItem>
+          <MenuItem value={EUserRole.FACTORY}>Mayorista</MenuItem>
         </Select>
 
         <Box

@@ -1,7 +1,19 @@
 export enum EUserRole {
-  ADMIN = "Administrador",
-  MANUFACTURER = "Fabricante",
-  DISTRIBUTOR = "Distribuidor",
-  RETAILER = "Minorista",
-  CONSUMER = "Consumidor",
+  ADMIN = "ADMIN",
+  CONSUMER = "CONSUMER",
+  RETAILER = "RETAILER",
+  FACTORY = "FACTORY",
+  PRODUCER = "PRODUCER",
+}
+
+export enum EAccountStatus {
+  Pending,
+  Approved,
+  Rejected,
+  Canceled,
+}
+
+export interface IAccountInfo {
+  role: EUserRole;
+  status: EAccountStatus;
 }
