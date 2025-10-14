@@ -17,15 +17,16 @@ contract AccessManager is AccessControl {
 
     // --- Estados ---
     enum AccountStatus {
-        Pending,   // 0
-        Approved,  // 1
-        Rejected,  // 2
-        Canceled   // 3
+        None,
+        Pending, // 1
+        Approved, // 2
+        Rejected, // 3
+        Canceled // 4
     }
 
     struct Account {
-        bytes32 role;   // 32 bytes
-        uint8 status;   // 1 byte
+        bytes32 role; // 32 bytes
+        uint8 status; // 1 byte
     }
 
     mapping(address => Account) private accounts;
@@ -94,31 +95,77 @@ contract AccessManager is AccessControl {
     }
 
     // --- Consultas ---
-    function getAccountInfo(address account)
-        external
-        view
-        returns (bytes32 role, uint8 status)
-    {
+    function getAccountInfo(
+        address account
+    ) external view returns (bytes32 role, uint8 status) {
         Account memory acc = accounts[account];
         return (acc.role, acc.status);
     }
 
-    function getAccountsByRole(bytes32 role) external view returns (address[] memory) {
+    function getAccountsByRole(
+        bytes32 role
+    ) external view returns (address[] memory) {
         return _roleMembers[role];
     }
 
-    function hasActiveRole(address account, bytes32 role) external view returns (bool) {
+    function hasActiveRole(
+        address account,
+        bytes32 role
+    ) external view returns (bool) {
         Account memory acc = accounts[account];
-        return acc.status == uint8(AccountStatus.Approved) && hasRole(role, account);
+        return
+            acc.status == uint8(AccountStatus.Approved) &&
+            hasRole(role, account);
+    }
+
+    function getAllAccounts()
+        external
+        view
+        returns (
+            address[] memory accountsList,
+            bytes32[] memory roles,
+            uint8[] memory statuses
+        )
+    {
+        uint256 total = 0;
+
+        for (uint256 i = 0; i < _roleMembers[ADMIN].length; i++) total++;
+        for (uint256 i = 0; i < _roleMembers[CONSUMER].length; i++) total++;
+        for (uint256 i = 0; i < _roleMembers[RETAILER].length; i++) total++;
+        for (uint256 i = 0; i < _roleMembers[FACTORY].length; i++) total++;
+        for (uint256 i = 0; i < _roleMembers[PRODUCER].length; i++) total++;
+
+        accountsList = new address[](total);
+        roles = new bytes32[](total);
+        statuses = new uint8[](total);
+
+        uint256 idx = 0;
+        bytes32[5] memory allRoles = [
+            ADMIN,
+            CONSUMER,
+            RETAILER,
+            FACTORY,
+            PRODUCER
+        ];
+        for (uint256 r = 0; r < allRoles.length; r++) {
+            address[] memory members = _roleMembers[allRoles[r]];
+            for (uint256 m = 0; m < members.length; m++) {
+                accountsList[idx] = members[m];
+                roles[idx] = accounts[members[m]].role;
+                statuses[idx] = accounts[members[m]].status;
+                idx++;
+            }
+        }
     }
 
     // --- Validaciones ---
     function isValidRole(bytes32 role) public pure returns (bool) {
-        return role == ADMIN ||
-               role == CONSUMER ||
-               role == RETAILER ||
-               role == FACTORY ||
-               role == PRODUCER;
+        return
+            role == ADMIN ||
+            role == CONSUMER ||
+            role == RETAILER ||
+            role == FACTORY ||
+            role == PRODUCER;
     }
 
     function getRoleName(bytes32 role) external pure returns (string memory) {

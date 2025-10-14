@@ -11,12 +11,16 @@ import {
 } from "@mui/material";
 
 import { CardLayout } from "../../layouts";
-import { EUserRole } from "../../interfaces";
+import { UserRole } from "../../interfaces";
 import { useRegistry } from "@hooks/useRegistry";
+import { useGlobal } from "@context/global/provider";
 
 const RequestRole = () => {
-  const [role, setRole] = useState<EUserRole | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const { requestRole } = useRegistry();
+  const { userInfo } = useGlobal();
+
+  console.log("UserInfo en RequestRole: ", userInfo);
 
   function handleRequestRole() {
     console.log("Solicitud de rol:", role);
@@ -48,12 +52,12 @@ const RequestRole = () => {
           fullWidth
           value={role}
           sx={{ padding: 0 }}
-          onChange={(e) => setRole(e.target.value as EUserRole)}
+          onChange={(e) => setRole(e.target.value as UserRole)}
         >
-          <MenuItem value={EUserRole.CONSUMER}>Consumidor</MenuItem>
-          <MenuItem value={EUserRole.PRODUCER}>Productor</MenuItem>
-          <MenuItem value={EUserRole.RETAILER}>Minorista</MenuItem>
-          <MenuItem value={EUserRole.FACTORY}>Mayorista</MenuItem>
+          <MenuItem value={UserRole.CONSUMER}>Consumidor</MenuItem>
+          <MenuItem value={UserRole.PRODUCER}>Productor</MenuItem>
+          <MenuItem value={UserRole.RETAILER}>Minorista</MenuItem>
+          <MenuItem value={UserRole.FACTORY}>Mayorista</MenuItem>
         </Select>
 
         <Box

@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import { ProtectedRoute } from "@pages/ProtectedRoute";
 import Header from "@components/Header";
 import RequestRole from "@components/UserAccess/RequestRole";
 import Login from "@components/UserAccess/Login";
-import DashboardRouter from "@pages/DahsboardRouter";
+import DashboardRouter from "@components/Dashboard";
+import AdminPanel from "@components/Admin";
 
 const App = () => {
   return (
@@ -14,28 +14,13 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/request-role"
-          element={
-            <ProtectedRoute requireRole={false}>
-              <RequestRole />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/request-role" element={<RequestRole />} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardRouter />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={<DashboardRouter />} />
 
-        <Route
-          path="/roles"
-          element={<div>Roles page en construcción...</div>}
-        />
+        <Route path="/admin-panel" element={<AdminPanel />} />
+
+        <Route path="/roles" element={<div>Roles page ...</div>} />
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 

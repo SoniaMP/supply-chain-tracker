@@ -1,4 +1,4 @@
-export enum EUserRole {
+export const enum UserRole {
   ADMIN = "ADMIN",
   CONSUMER = "CONSUMER",
   RETAILER = "RETAILER",
@@ -6,7 +6,8 @@ export enum EUserRole {
   PRODUCER = "PRODUCER",
 }
 
-export enum EAccountStatus {
+export enum AccountStatus {
+  None,
   Pending,
   Approved,
   Rejected,
@@ -14,6 +15,6 @@ export enum EAccountStatus {
 }
 
 export interface IAccountInfo {
-  role: EUserRole;
-  status: EAccountStatus;
+  role: string;
+  status: AccountStatus;
 }

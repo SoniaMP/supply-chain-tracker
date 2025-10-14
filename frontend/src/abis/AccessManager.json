@@ -91,6 +91,21 @@
   },
   {
     "type": "function",
+    "name": "getAllAccounts",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "accountsList",
+        "type": "address[]",
+        "internalType": "address[]"
+      },
+      { "name": "roles", "type": "bytes32[]", "internalType": "bytes32[]" },
+      { "name": "statuses", "type": "uint8[]", "internalType": "uint8[]" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getRoleAdmin",
     "inputs": [
       { "name": "role", "type": "bytes32", "internalType": "bytes32" }

@@ -7,15 +7,28 @@ import {
   Stack,
   Tooltip,
 } from "@mui/material";
+import AccountIcon from "@mui/icons-material/AccountCircleOutlined";
+import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { useNavigate } from "react-router-dom";
 
+import { useGlobal } from "@context/global/provider";
+import { useWallet } from "@context/metamask/provider";
 import { HeaderChip } from "../styled";
 import { formatAddress } from "../../utils/helpers";
-import { useWallet } from "../../context/metamask/provider";
-import UserButtons from "./UserButtons";
+import RoleButtons from "./RoleButtons";
+
+const mapRoleToLabel: Record<string, string> = {
+  ADMIN: "Admin",
+  CONSUMER: "Consumer",
+  RETAILER: "Retailer",
+  FACTORY: "Factory",
+  PRODUCER: "Producer",
+};
 
 const Header = () => {
+  const navigate = useNavigate();
   const {
     account,
     isConnecting,
@@ -23,6 +36,11 @@ const Header = () => {
     connectWallet,
     disconnectWallet,
   } = useWallet();
+  const { userInfo } = useGlobal();
+
+  function handleNavigateDashboard() {
+    navigate("/dashboard");
+  }
 
   return (
     <AppBar position="static">
@@ -42,6 +60,14 @@ const Header = () => {
 
         {account ? (
           <Stack direction="row" spacing={1} alignItems="center">
+            <Stack spacing={0.5} direction="row" alignItems="center">
+              <AccountIcon />
+              {userInfo?.role && (
+                <Typography variant="caption">
+                  {mapRoleToLabel[userInfo.role]}
+                </Typography>
+              )}
+            </Stack>
             <Tooltip title={account} arrow>
               <HeaderChip
                 label={formatAddress(account)}
@@ -49,7 +75,13 @@ const Header = () => {
                 variant="outlined"
               />
             </Tooltip>
-            <UserButtons />
+            <Button
+              startIcon={<DashboardIcon />}
+              onClick={handleNavigateDashboard}
+            >
+              Dashboard
+            </Button>
+            <RoleButtons />
             <Button
               variant="outlined"
               color="inherit"

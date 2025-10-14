@@ -1,33 +1,35 @@
 import { ethers } from "ethers";
-import { EUserRole, type IAccountInfo } from "../interfaces";
+import { UserRole, type IAccountInfo } from "../interfaces";
 
 // --- Roles definidos en el contrato (hashes de keccak256) ---
-export const ROLES: Record<EUserRole, string> = {
-  [EUserRole.ADMIN]: ethers.keccak256(ethers.toUtf8Bytes("ADMIN")),
-  [EUserRole.CONSUMER]: ethers.keccak256(ethers.toUtf8Bytes("CONSUMER")),
-  [EUserRole.RETAILER]: ethers.keccak256(ethers.toUtf8Bytes("RETAILER")),
-  [EUserRole.FACTORY]: ethers.keccak256(ethers.toUtf8Bytes("FACTORY")),
-  [EUserRole.PRODUCER]: ethers.keccak256(ethers.toUtf8Bytes("PRODUCER")),
+export const ROLES: Record<string, string> = {
+  [UserRole.ADMIN]: ethers.keccak256(ethers.toUtf8Bytes("ADMIN")),
+  [UserRole.CONSUMER]: ethers.keccak256(ethers.toUtf8Bytes("CONSUMER")),
+  [UserRole.RETAILER]: ethers.keccak256(ethers.toUtf8Bytes("RETAILER")),
+  [UserRole.FACTORY]: ethers.keccak256(ethers.toUtf8Bytes("FACTORY")),
+  [UserRole.PRODUCER]: ethers.keccak256(ethers.toUtf8Bytes("PRODUCER")),
 } as const;
 
 // --- Mapa inverso para decodificar desde la blockchain ---
-export const ROLE_NAMES: Record<string, EUserRole> = Object.entries(
-  ROLES
-).reduce((acc, [name, hash]) => {
-  acc[hash] = name as EUserRole;
-  return acc;
-}, {} as Record<string, EUserRole>);
+export const ROLE_NAMES: Record<string, string> = Object.entries(ROLES).reduce(
+  (acc, [name, hash]) => {
+    acc[hash] = name;
+    return acc;
+  },
+  {} as Record<string, string>
+);
 
 // --- Decodificador desde contrato → front ---
-export function fromDtoToUi(accountInfo: IAccountInfo): IAccountInfo {
-  const { role: roleHash, status } = accountInfo;
-  const role = ROLE_NAMES[roleHash];
-  const statusIndex = Number(status);
+export function fromDtoToUi(accountInfo: any): IAccountInfo | null {
+  const roleHash = accountInfo[0];
+  const status = Number(accountInfo[1]);
 
-  return {
-    role,
-    status: statusIndex,
-  };
+  const role = ROLE_NAMES[roleHash];
+  if (!role) return null;
+
+  console.log("+++ Parsed data: ", { role, status });
+
+  return { role, status };
 }
 
 // --- Codificador desde front → contrato ---

@@ -4,7 +4,7 @@ import { Contract } from "ethers";
 
 import AccessManagerABI from "../abis/AccessManager.json";
 import { useWallet } from "../context/metamask/provider";
-import { EUserRole } from "../interfaces";
+import { UserRole } from "../interfaces";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ACCESS_MANAGER_ADDRESS;
 
@@ -34,7 +34,7 @@ export const useRegistry = () => {
     })();
   }, [provider]);
 
-  async function requestRole(role: EUserRole) {
+  async function requestRole(role: UserRole) {
     if (!registry) {
       throw new Error("El contrato no está inicializado");
     }
