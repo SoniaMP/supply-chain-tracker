@@ -20,21 +20,26 @@ export const ROLE_NAMES: Record<string, string> = Object.entries(ROLES).reduce(
 );
 
 // --- Decodificador desde contrato → front ---
-export function fromDtoToUi(accountInfo: any): IAccountInfo | null {
-  const roleHash = accountInfo[0];
-  const status = Number(accountInfo[1]);
+export function getUiAccountInfo(
+  accountInfo: IAccountInfo
+): IAccountInfo | null {
+  const { account, role, status } = accountInfo;
 
-  const role = ROLE_NAMES[roleHash];
-  if (!role) return null;
+  const newRole = ROLE_NAMES[role];
+  if (!newRole) return null;
 
-  console.log("+++ Parsed data: ", { role, status });
+  return { account, role: newRole, status: Number(status) };
+}
 
-  return { role, status };
+export function getUiAccountsList(accounts: any): IAccountInfo[] {
+  return accounts
+    .map((acc: any) => getUiAccountInfo(acc))
+    .filter(Boolean) as IAccountInfo[];
 }
 
 // --- Codificador desde front → contrato ---
 export function encodeRole(roleName: keyof typeof ROLES): string {
-  const roleHash = ROLES[roleName];
-  if (!roleHash) throw new Error(`Invalid role name: ${roleName}`);
-  return roleHash;
+  const role = ROLES[roleName];
+  if (!role) throw new Error(`Invalid role name: ${roleName}`);
+  return role;
 }

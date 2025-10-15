@@ -18,14 +18,7 @@ import { useWallet } from "@context/metamask/provider";
 import { HeaderChip } from "../styled";
 import { formatAddress } from "../../utils/helpers";
 import RoleButtons from "./RoleButtons";
-
-const mapRoleToLabel: Record<string, string> = {
-  ADMIN: "Admin",
-  CONSUMER: "Consumer",
-  RETAILER: "Retailer",
-  FACTORY: "Factory",
-  PRODUCER: "Producer",
-};
+import { mapRoleToLabel } from "../../interfaces";
 
 const Header = () => {
   const navigate = useNavigate();

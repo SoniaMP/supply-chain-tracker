@@ -10,17 +10,13 @@ import {
   Typography,
 } from "@mui/material";
 
+import { useAccessManager } from "@hooks/useAccessManager";
 import { CardLayout } from "../../layouts";
 import { UserRole } from "../../interfaces";
-import { useRegistry } from "@hooks/useRegistry";
-import { useGlobal } from "@context/global/provider";
 
 const RequestRole = () => {
   const [role, setRole] = useState<UserRole | null>(null);
-  const { requestRole } = useRegistry();
-  const { userInfo } = useGlobal();
-
-  console.log("UserInfo en RequestRole: ", userInfo);
+  const { requestRole } = useAccessManager();
 
   function handleRequestRole() {
     console.log("Solicitud de rol:", role);

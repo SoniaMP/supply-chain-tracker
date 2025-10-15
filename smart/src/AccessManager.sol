@@ -18,15 +18,21 @@ contract AccessManager is AccessControl {
     // --- Estados ---
     enum AccountStatus {
         None,
-        Pending, // 1
-        Approved, // 2
-        Rejected, // 3
-        Canceled // 4
+        Pending,
+        Approved,
+        Rejected,
+        Canceled
     }
 
     struct Account {
-        bytes32 role; // 32 bytes
-        uint8 status; // 1 byte
+        bytes32 role;
+        uint8 status;
+    }
+
+    struct AccountView {
+        address account;
+        bytes32 role;
+        uint8 status;
     }
 
     mapping(address => Account) private accounts;
@@ -96,10 +102,10 @@ contract AccessManager is AccessControl {
 
     // --- Consultas ---
     function getAccountInfo(
-        address account
-    ) external view returns (bytes32 role, uint8 status) {
-        Account memory acc = accounts[account];
-        return (acc.role, acc.status);
+        address user
+    ) external view returns (address account, bytes32 role, uint8 status) {
+        Account memory acc = accounts[user];
+        return (user, acc.role, acc.status);
     }
 
     function getAccountsByRole(
@@ -121,25 +127,9 @@ contract AccessManager is AccessControl {
     function getAllAccounts()
         external
         view
-        returns (
-            address[] memory accountsList,
-            bytes32[] memory roles,
-            uint8[] memory statuses
-        )
+        returns (AccountView[] memory list)
     {
         uint256 total = 0;
-
-        for (uint256 i = 0; i < _roleMembers[ADMIN].length; i++) total++;
-        for (uint256 i = 0; i < _roleMembers[CONSUMER].length; i++) total++;
-        for (uint256 i = 0; i < _roleMembers[RETAILER].length; i++) total++;
-        for (uint256 i = 0; i < _roleMembers[FACTORY].length; i++) total++;
-        for (uint256 i = 0; i < _roleMembers[PRODUCER].length; i++) total++;
-
-        accountsList = new address[](total);
-        roles = new bytes32[](total);
-        statuses = new uint8[](total);
-
-        uint256 idx = 0;
         bytes32[5] memory allRoles = [
             ADMIN,
             CONSUMER,
@@ -147,12 +137,25 @@ contract AccessManager is AccessControl {
             FACTORY,
             PRODUCER
         ];
+
+        for (uint256 r = 0; r < allRoles.length; r++) {
+            total += _roleMembers[allRoles[r]].length;
+        }
+
+        list = new AccountView[](total);
+
+        uint256 idx = 0;
         for (uint256 r = 0; r < allRoles.length; r++) {
             address[] memory members = _roleMembers[allRoles[r]];
             for (uint256 m = 0; m < members.length; m++) {
-                accountsList[idx] = members[m];
-                roles[idx] = accounts[members[m]].role;
-                statuses[idx] = accounts[members[m]].status;
+                address member = members[m];
+                Account storage acc = accounts[member];
+
+                list[idx] = AccountView({
+                    account: member,
+                    role: acc.role,
+                    status: acc.status
+                });
                 idx++;
             }
         }

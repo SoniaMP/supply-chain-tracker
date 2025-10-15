@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { BrowserProvider } from "ethers";
+import { Signer } from "ethers";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ethereum = (window as any).ethereum;
 
 export const useWalletState = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [signer, setSigner] = useState<Signer | null>(null);
   const [error, setError] = useState("");
   const isMetamaskInstalled = !!ethereum && ethereum.isMetaMask;
 
@@ -26,6 +27,7 @@ export const useWalletState = () => {
       const sgn = await prov.getSigner();
       const acct = await sgn.getAddress();
 
+      setSigner(sgn);
       setProvider(prov);
       setAccount(acct);
     } catch (err) {
@@ -57,6 +59,7 @@ export const useWalletState = () => {
 
           setProvider(newProvider);
           setAccount(newAccount);
+          setSigner(signer);
         } catch (err) {
           console.error("Error updating provider/account:", err);
           setError("Error updating account");
@@ -81,6 +84,7 @@ export const useWalletState = () => {
     isConnecting,
     isMetamaskInstalled,
     provider,
+    signer,
     connectWallet,
     disconnectWallet,
     error,

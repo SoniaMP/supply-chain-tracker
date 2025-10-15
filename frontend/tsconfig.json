@@ -12,7 +12,8 @@
       "@pages/*": ["pages/*"],
       "@context/*": ["context/*"],
       "@providers/*": ["providers/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@services/*": ["services/*"]
     },
 
     "target": "ESNext",

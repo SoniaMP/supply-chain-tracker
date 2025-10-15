@@ -70,9 +70,10 @@
     "type": "function",
     "name": "getAccountInfo",
     "inputs": [
-      { "name": "account", "type": "address", "internalType": "address" }
+      { "name": "user", "type": "address", "internalType": "address" }
     ],
     "outputs": [
+      { "name": "account", "type": "address", "internalType": "address" },
       { "name": "role", "type": "bytes32", "internalType": "bytes32" },
       { "name": "status", "type": "uint8", "internalType": "uint8" }
     ],
@@ -95,12 +96,15 @@
     "inputs": [],
     "outputs": [
       {
-        "name": "accountsList",
-        "type": "address[]",
-        "internalType": "address[]"
-      },
-      { "name": "roles", "type": "bytes32[]", "internalType": "bytes32[]" },
-      { "name": "statuses", "type": "uint8[]", "internalType": "uint8[]" }
+        "name": "list",
+        "type": "tuple[]",
+        "internalType": "struct AccessManager.AccountView[]",
+        "components": [
+          { "name": "account", "type": "address", "internalType": "address" },
+          { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "status", "type": "uint8", "internalType": "uint8" }
+        ]
+      }
     ],
     "stateMutability": "view"
   },

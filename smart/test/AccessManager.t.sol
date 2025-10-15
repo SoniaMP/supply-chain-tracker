@@ -32,7 +32,7 @@ contract AccessManagerTest is Test {
         manager.requestRole(CONSUMER);
         vm.stopPrank();
 
-        (bytes32 role, uint8 status) = manager.getAccountInfo(user1);
+        (, bytes32 role, uint8 status) = manager.getAccountInfo(user1);
         assertEq(role, CONSUMER);
         assertEq(status, uint8(AccessManager.AccountStatus.Pending));
     }
@@ -62,7 +62,7 @@ contract AccessManagerTest is Test {
         manager.approveAccount(user1);
         vm.stopPrank();
 
-        (bytes32 role, uint8 status) = manager.getAccountInfo(user1);
+        (, bytes32 role, uint8 status) = manager.getAccountInfo(user1);
         assertEq(role, CONSUMER);
         assertEq(status, uint8(AccessManager.AccountStatus.Approved));
         assertTrue(manager.hasRole(CONSUMER, user1));
@@ -85,7 +85,7 @@ contract AccessManagerTest is Test {
         manager.rejectAccount(user1);
         vm.stopPrank();
 
-        (, uint8 status) = manager.getAccountInfo(user1);
+        (, , uint8 status) = manager.getAccountInfo(user1);
         assertEq(status, uint8(AccessManager.AccountStatus.Rejected));
         assertFalse(manager.hasRole(RETAILER, user1));
     }
@@ -101,7 +101,7 @@ contract AccessManagerTest is Test {
         manager.cancelAccount(user1);
         vm.stopPrank();
 
-        (, uint8 status) = manager.getAccountInfo(user1);
+        (, , uint8 status) = manager.getAccountInfo(user1);
         assertEq(status, uint8(AccessManager.AccountStatus.Canceled));
         assertFalse(manager.hasRole(FACTORY, user1));
     }
@@ -144,6 +144,7 @@ contract AccessManagerTest is Test {
         assertTrue(manager.hasActiveRole(user1, CONSUMER));
     }
 
+    // --- 7️⃣ Listado completo ---
     function test_GetAllAccounts() public {
         // User1 as CONSUMER
         vm.startPrank(user1);
@@ -163,22 +164,29 @@ contract AccessManagerTest is Test {
         manager.approveAccount(user2);
         vm.stopPrank();
 
-        (
-            address[] memory accountsList,
-            bytes32[] memory roles,
-            uint8[] memory statuses
-        ) = manager.getAllAccounts();
+        AccessManager.AccountView[] memory accounts = manager.getAllAccounts();
 
-        assertEq(accountsList.length, 3);
-        assertEq(roles.length, 3);
-        assertEq(statuses.length, 3);
+        assertEq(accounts.length, 3);
 
-        assertEq(accountsList[1], user1);
-        assertEq(roles[1], CONSUMER);
-        assertEq(statuses[1], uint8(AccessManager.AccountStatus.Approved));
+        assertEq(accounts[0].account, admin);
+        assertEq(accounts[0].role, ADMIN);
+        assertEq(
+            accounts[0].status,
+            uint8(AccessManager.AccountStatus.Approved)
+        );
 
-        assertEq(accountsList[2], user2);
-        assertEq(roles[2], RETAILER);
-        assertEq(statuses[2], uint8(AccessManager.AccountStatus.Approved));
+        assertEq(accounts[1].account, user1);
+        assertEq(accounts[1].role, CONSUMER);
+        assertEq(
+            accounts[1].status,
+            uint8(AccessManager.AccountStatus.Approved)
+        );
+
+        assertEq(accounts[2].account, user2);
+        assertEq(accounts[2].role, RETAILER);
+        assertEq(
+            accounts[2].status,
+            uint8(AccessManager.AccountStatus.Approved)
+        );
     }
 }
