@@ -15,6 +15,7 @@ export const useAccessManager = () => {
   const {
     data,
     isLoading,
+    isValidating,
     mutate: reloadUserInfo,
     error,
   } = useSWR(
@@ -32,7 +33,7 @@ export const useAccessManager = () => {
 
   return {
     userInfo,
-    isUserInfoLoading: isLoading,
+    isUserInfoLoading: isLoading && isValidating,
     error,
     reloadUserInfo,
     requestRole: service.requestRole,

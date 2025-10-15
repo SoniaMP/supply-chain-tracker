@@ -109,7 +109,7 @@ const AdminPanel = () => {
                           alignItems="flex-start"
                         >
                           <Typography variant="body2">
-                            User #{idx + 1}
+                            Usuario #{idx + 1}
                           </Typography>
                           <Chip
                             label={mapRoleToLabel[role]}

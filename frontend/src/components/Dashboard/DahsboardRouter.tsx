@@ -1,16 +1,14 @@
-import { useNavigate } from "react-router-dom";
-import { Backdrop, CircularProgress } from "@mui/material";
-
 import { useGlobal } from "@context/global/provider";
-import { useWallet } from "@context/metamask/provider";
 
-import { UserRole } from "../../interfaces";
+import UnderRevision from "@components/UserAccess/UnderRevision";
+import { AccountStatus, UserRole } from "../../interfaces";
 import Consumer from "./components/Consumer";
 import Admin from "./components/Admin";
 import Retailer from "./components/Retailer";
 import Factory from "./components/Factory";
 import Producer from "./components/Producer";
-import ControlPanel from "./components/ControlPanel";
+import { CardLayout } from "../../layouts";
+import { Typography } from "@mui/material";
 
 const mappingRolesToComponents: { [key in UserRole]: React.FC } = {
   [UserRole.ADMIN]: Admin,
@@ -21,36 +19,36 @@ const mappingRolesToComponents: { [key in UserRole]: React.FC } = {
 };
 
 const DashboardRouter = () => {
-  const navigate = useNavigate();
-  const { account } = useWallet();
-  const { userInfo, isUserInfoLoading } = useGlobal();
+  const { userInfo } = useGlobal();
 
-  if (!account) {
-    navigate("/login", { replace: true });
-    return null;
-  }
-
-  if (isUserInfoLoading || !userInfo) {
-    return (
-      <Backdrop open>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    );
-  }
-
-  if (!userInfo) {
-    navigate("/request-role", { replace: true });
-    return null;
-  }
+  if (!userInfo) return null;
 
   const DashboardComponent =
     mappingRolesToComponents[userInfo.role as UserRole];
 
-  return (
-    <ControlPanel>
-      <DashboardComponent />
-    </ControlPanel>
-  );
+  switch (userInfo.status) {
+    case AccountStatus.Pending:
+      return <UnderRevision />;
+
+    case AccountStatus.Rejected:
+      return (
+        <CardLayout>
+          <Typography>
+            Tu solicitud fue rechazada. Contacta con el administrador.
+          </Typography>
+        </CardLayout>
+      );
+
+    case AccountStatus.Canceled:
+      return (
+        <CardLayout>
+          <Typography>Tu acceso fue cancelado.</Typography>
+        </CardLayout>
+      );
+
+    default:
+      return <DashboardComponent />;
+  }
 };
 
 export default DashboardRouter;
