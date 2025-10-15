@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Box,
   Card,
   Chip,
   Container,
@@ -20,10 +21,11 @@ import {
   mapRoleToLabel,
   mapStatusToLabel,
 } from "../../interfaces";
+import UserActions from "./UserActions";
 
 const AdminPanel = () => {
   const [accounts, setAccounts] = useState<IAccountInfo[]>([]);
-  const { getAllAccounts } = useAccessManager();
+  const { approveRole, getAllAccounts } = useAccessManager();
 
   console.log("Accounts in AdminPanel:", accounts);
 
@@ -47,6 +49,20 @@ const AdminPanel = () => {
       default:
         return "default";
     }
+  }
+
+  function handleApprove(account: string) {
+    console.log(`Approve account: ${account}`);
+    approveRole(account);
+  }
+
+  function handleReject(account: string) {
+    console.log(`Reject account: ${account}`);
+    // Lógica para rechazar la cuenta
+  }
+  function handleSetPending(account: string) {
+    console.log(`Set account to pending: ${account}`);
+    // Lógica para establecer la cuenta como pendiente
   }
 
   return (
@@ -102,11 +118,12 @@ const AdminPanel = () => {
                       <ListItemAvatar>
                         <PeopleIcon />
                       </ListItemAvatar>
-                      <Stack spacing={1} alignItems="flex-start">
+                      <Stack spacing={1} alignItems="flex-start" width="100%">
                         <Stack
                           direction="row"
                           spacing={2}
-                          alignItems="flex-start"
+                          alignItems="center"
+                          width="100%"
                         >
                           <Typography variant="body2">
                             Usuario #{idx + 1}
@@ -122,6 +139,13 @@ const AdminPanel = () => {
                             size="small"
                             color={getChipStatusColor(status)}
                           />
+                          <Box flexGrow={1} display="flex">
+                            <UserActions
+                              onPending={() => handleSetPending(account)}
+                              onApprove={() => handleApprove(account)}
+                              onReject={() => handleReject(account)}
+                            />
+                          </Box>
                         </Stack>
                         <Typography sx={{ fontFamily: "monospace" }}>
                           {account}

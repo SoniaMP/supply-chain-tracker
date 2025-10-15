@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
-import { BrowserProvider } from "ethers";
-import { Signer } from "ethers";
+import { ethers, BrowserProvider, Signer } from "ethers";
 
 const ethereum = (window as any).ethereum;
 
 export const useWalletState = () => {
-  const [account, setAccount] = useState<string | null>(null);
+  const [account, setAccount] = useState<string | null>(() => {
+    return localStorage.getItem("connectedAccount");
+  });
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [signer, setSigner] = useState<Signer | null>(null);
@@ -21,15 +21,16 @@ export const useWalletState = () => {
 
     setIsConnecting(true);
     try {
-      const prov = new ethers.BrowserProvider(ethereum);
-      await prov.send("eth_requestAccounts", []);
+      const provider = new ethers.BrowserProvider(ethereum);
+      await provider.send("eth_requestAccounts", []);
 
-      const sgn = await prov.getSigner();
-      const acct = await sgn.getAddress();
+      const signer = await provider.getSigner();
+      const account = await signer.getAddress();
 
-      setSigner(sgn);
-      setProvider(prov);
-      setAccount(acct);
+      setSigner(signer);
+      setProvider(provider);
+      setAccount(account);
+      localStorage.setItem("connectedAccount", account);
     } catch (err) {
       console.error(err);
       setError("Error connecting wallet");
@@ -41,7 +42,10 @@ export const useWalletState = () => {
 
   const disconnectWallet = () => {
     setAccount(null);
+    setSigner(null);
     setProvider(null);
+    localStorage.removeItem("connectedAccount");
+    localStorage.removeItem("userInfo");
   };
 
   useEffect(() => {
@@ -53,13 +57,14 @@ export const useWalletState = () => {
         disconnectWallet();
       } else {
         try {
-          const newProvider = new ethers.BrowserProvider(ethereum);
-          const signer = await newProvider.getSigner();
-          const newAccount = await signer.getAddress();
+          const provider = new ethers.BrowserProvider(ethereum);
+          const signer = await provider.getSigner();
+          const account = await signer.getAddress();
 
-          setProvider(newProvider);
-          setAccount(newAccount);
+          setProvider(provider);
+          setAccount(account);
           setSigner(signer);
+          localStorage.setItem("connectedAccount", account);
         } catch (err) {
           console.error("Error updating provider/account:", err);
           setError("Error updating account");
