@@ -49,20 +49,19 @@ const Login = () => {
         </Button>
 
         {!isMetamaskInstalled && (
-          <Typography variant="body2" color="textSecondary">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="body2">
-                ¿No tienes MetaMask instalado?
-              </Typography>
-              <Link
-                href="https://metamask.io/download.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Descarga MetaMask aquí
-              </Link>
-            </Stack>
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="body2">
+              ¿No tienes MetaMask instalado?
+            </Typography>
+            <Link
+              href="https://metamask.io/download.html"
+              target="_blank"
+              variant="body2"
+              rel="noopener noreferrer"
+            >
+              Descarga MetaMask aquí
+            </Link>
+          </Stack>
         )}
         <Card sx={{ p: 2 }}>
           <Typography variant="body1" fontWeight={"bold"}>

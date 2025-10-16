@@ -1,6 +1,7 @@
 import { useWallet } from "@context/metamask/provider";
 import { ethers } from "ethers";
 import AccessManagerAbi from "../abis/AccessManager.json";
+import { useEffect, useState } from "react";
 
 const CONTRACTS = {
   AccessManager: {
@@ -9,11 +10,26 @@ const CONTRACTS = {
   },
 };
 
+function getContractInstance(
+  address: string,
+  abi: any,
+  signer: ethers.Signer | null
+): ethers.Contract | null {
+  if (!signer || !address) return null;
+  return new ethers.Contract(address, abi, signer);
+}
+
 export const useContractInstance = (name: keyof typeof CONTRACTS) => {
   const { signer } = useWallet();
   const { address, abi } = CONTRACTS[name];
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
 
-  if (!signer || !address) return null;
+  useEffect(() => {
+    if (!signer || !address) return;
 
-  return new ethers.Contract(address, abi, signer);
+    const instance = getContractInstance(address, abi, signer);
+    setContract(instance);
+  }, [address, abi, signer]);
+
+  return contract;
 };

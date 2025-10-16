@@ -25,18 +25,21 @@ import UserActions from "./UserActions";
 
 const AdminPanel = () => {
   const [accounts, setAccounts] = useState<IAccountInfo[]>([]);
-  const { approveRole, getAllAccounts } = useAccessManager();
+  const { isServiceReady, approveRole, getAllAccounts } = useAccessManager();
 
   console.log("Accounts in AdminPanel:", accounts);
 
   useEffect(() => {
+    if (!isServiceReady) return;
+
     async function fetchData() {
       const accounts = await getAllAccounts();
       setAccounts(accounts);
     }
+
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isServiceReady]);
 
   function getChipStatusColor(status: number) {
     switch (status) {
@@ -53,7 +56,7 @@ const AdminPanel = () => {
 
   function handleApprove(account: string) {
     console.log(`Approve account: ${account}`);
-    approveRole(account);
+    approveRole?.(account);
   }
 
   function handleReject(account: string) {

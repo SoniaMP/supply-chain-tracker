@@ -20,7 +20,7 @@ const RequestRole = () => {
 
   function handleRequestRole() {
     console.log("Solicitud de rol:", role);
-    requestRole(role!).catch((err) => {
+    requestRole?.(role!).catch((err) => {
       console.error("Error al solicitar el rol:", err);
       alert(`Error al solicitar el rol: ${err.message}`);
     });

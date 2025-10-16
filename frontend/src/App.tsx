@@ -8,6 +8,7 @@ import AdminPanel from "@components/Admin";
 import RouteLayout from "./layout/RouteLayout";
 
 const App = () => {
+  console.log("++++++++++++App rendered");
   return (
     <>
       <Header />

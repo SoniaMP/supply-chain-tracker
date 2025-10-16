@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ethers, BrowserProvider, Signer } from "ethers";
+import { useCallback, useEffect, useState } from "react";
+import { BrowserProvider, Signer } from "ethers";
 
 const ethereum = (window as any).ethereum;
 
@@ -7,13 +7,12 @@ export const useWalletState = () => {
   const [account, setAccount] = useState<string | null>(() => {
     return localStorage.getItem("connectedAccount");
   });
-  const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [signer, setSigner] = useState<Signer | null>(null);
   const [error, setError] = useState("");
   const isMetamaskInstalled = !!ethereum && ethereum.isMetaMask;
 
-  const connectWallet = async () => {
+  const connectWallet = useCallback(async () => {
     if (!isMetamaskInstalled) {
       setError("MetaMask is not installed");
       return;
@@ -21,14 +20,13 @@ export const useWalletState = () => {
 
     setIsConnecting(true);
     try {
-      const provider = new ethers.BrowserProvider(ethereum);
+      const provider = new BrowserProvider(ethereum);
       await provider.send("eth_requestAccounts", []);
 
       const signer = await provider.getSigner();
       const account = await signer.getAddress();
 
       setSigner(signer);
-      setProvider(provider);
       setAccount(account);
       localStorage.setItem("connectedAccount", account);
     } catch (err) {
@@ -38,18 +36,17 @@ export const useWalletState = () => {
       setIsConnecting(false);
       setError("");
     }
-  };
+  }, [isMetamaskInstalled]);
 
   const disconnectWallet = () => {
     setAccount(null);
     setSigner(null);
-    setProvider(null);
     localStorage.removeItem("connectedAccount");
     localStorage.removeItem("userInfo");
   };
 
   useEffect(() => {
-    if (!ethereum || !provider) return;
+    if (!ethereum) return;
 
     const handleAccountsChanged = async (accounts: string[]) => {
       setIsConnecting(true);
@@ -57,11 +54,10 @@ export const useWalletState = () => {
         disconnectWallet();
       } else {
         try {
-          const provider = new ethers.BrowserProvider(ethereum);
+          const provider = new BrowserProvider(ethereum);
           const signer = await provider.getSigner();
           const account = await signer.getAddress();
 
-          setProvider(provider);
           setAccount(account);
           setSigner(signer);
           localStorage.setItem("connectedAccount", account);
@@ -82,13 +78,22 @@ export const useWalletState = () => {
       ethereum.removeListener("accountsChanged", handleAccountsChanged);
       ethereum.removeListener("chainChanged", handleChainChanged);
     };
-  }, [provider]);
+  }, []);
+
+  useEffect(() => {
+    if (!isMetamaskInstalled) {
+      setError("MetaMask is not installed");
+    }
+
+    if (account) {
+      connectWallet();
+    }
+  }, [account, connectWallet, isMetamaskInstalled]);
 
   return {
     account,
     isConnecting,
     isMetamaskInstalled,
-    provider,
     signer,
     connectWallet,
     disconnectWallet,

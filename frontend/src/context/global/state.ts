@@ -2,8 +2,13 @@ import { useEffect } from "react";
 import { useAccessManager } from "../../hooks/useAccessManager";
 
 export const useGlobalState = () => {
-  const { userInfo, isUserInfoLoading, requestRole, approveRole } =
-    useAccessManager();
+  const {
+    userInfo,
+    isServiceReady,
+    isUserInfoLoading,
+    requestRole,
+    approveRole,
+  } = useAccessManager();
 
   useEffect(() => {
     if (userInfo) {
@@ -13,6 +18,7 @@ export const useGlobalState = () => {
 
   return {
     userInfo,
+    isServiceReady,
     isUserInfoLoading,
     requestRole,
     approveRole,

@@ -51,48 +51,51 @@ const Header = () => {
           <Typography variant="h6">Supply Chain Tracker</Typography>
         </Box>
 
-        {account ? (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Stack spacing={0.5} direction="row" alignItems="center">
-              <AccountIcon />
-              {userInfo?.role && (
-                <Typography variant="caption">
-                  {mapRoleToLabel[userInfo.role]}
-                </Typography>
-              )}
-            </Stack>
-            <Tooltip title={account} arrow>
-              <HeaderChip
-                label={formatAddress(account)}
-                size="medium"
-                variant="outlined"
-              />
-            </Tooltip>
-            <Button
-              startIcon={<DashboardIcon />}
-              onClick={handleNavigateDashboard}
-            >
-              Dashboard
-            </Button>
-            <RoleButtons />
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={disconnectWallet}
-              startIcon={<LogoutIcon />}
-            >
-              Cerrar sesión
-            </Button>
-          </Stack>
-        ) : (
-          <Button
-            onClick={connectWallet}
-            disabled={!isMetamaskInstalled || isConnecting}
-            loading={isConnecting}
-            startIcon={<WalletIcon />}
-          >
-            {isConnecting ? "Conectando..." : "Conectar Wallet"}
-          </Button>
+        {isMetamaskInstalled && (
+          <>
+            {account ? (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Stack spacing={0.5} direction="row" alignItems="center">
+                  <AccountIcon />
+                  {userInfo?.role && (
+                    <Typography variant="caption">
+                      {mapRoleToLabel[userInfo.role]}
+                    </Typography>
+                  )}
+                </Stack>
+                <Tooltip title={account} arrow>
+                  <HeaderChip
+                    label={formatAddress(account)}
+                    size="medium"
+                    variant="outlined"
+                  />
+                </Tooltip>
+                <Button
+                  startIcon={<DashboardIcon />}
+                  onClick={handleNavigateDashboard}
+                >
+                  Dashboard
+                </Button>
+                <RoleButtons />
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={disconnectWallet}
+                  startIcon={<LogoutIcon />}
+                >
+                  Cerrar sesión
+                </Button>
+              </Stack>
+            ) : (
+              <Button
+                onClick={connectWallet}
+                loading={isConnecting}
+                startIcon={<WalletIcon />}
+              >
+                {isConnecting ? "Conectando..." : "Conectar Wallet"}
+              </Button>
+            )}
+          </>
         )}
       </Toolbar>
     </AppBar>

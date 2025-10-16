@@ -3,7 +3,7 @@ import { IAccountInfo } from "interfaces";
 
 export const accessManagerServices = (contract: any) => {
   if (!contract) {
-    console.warn("⚠️ AccessManager contract not initialized");
+    console.warn("AccessManager contract not initialized");
   }
 
   async function getAccountInfo(account: string): Promise<IAccountInfo> {
@@ -30,6 +30,7 @@ export const accessManagerServices = (contract: any) => {
 
   async function getAllAccounts() {
     const tx = await contract.getAllAccounts();
+    console.log("All accounts raw:", tx);
     return getUiAccountsList(tx);
   }
 

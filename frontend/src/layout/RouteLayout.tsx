@@ -6,10 +6,24 @@ import { useGlobal } from "@context/global/provider";
 
 const RouteLayout = () => {
   const { account } = useWallet();
-  const { userInfo, isUserInfoLoading } = useGlobal();
+  const { userInfo, isServiceReady, isUserInfoLoading } = useGlobal();
 
   if (!account) {
     return <Navigate to="/login" replace />;
+  }
+
+  console.log("RouteLayout render:", {
+    userInfo,
+    isServiceReady,
+    isUserInfoLoading,
+  });
+
+  if (!isServiceReady) {
+    return (
+      <Backdrop open>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
   }
 
   if (isUserInfoLoading) {

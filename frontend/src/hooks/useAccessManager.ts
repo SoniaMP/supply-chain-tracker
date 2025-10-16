@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useWallet } from "@context/metamask/provider";
 import { getUiAccountInfo } from "@utils/accessAdapters";
@@ -11,7 +11,13 @@ import { ContractNames } from "../interfaces";
 export const useAccessManager = () => {
   const { account } = useWallet();
   const contract = useContractInstance(ContractNames.ACCESS_MANAGER);
-  const service = accessManagerServices(contract);
+
+  const service = useMemo(
+    () => (contract ? accessManagerServices(contract) : null),
+    [contract]
+  );
+
+  const isServiceReady = !!service && !!account;
 
   const fallback = (() => {
     try {
@@ -28,8 +34,8 @@ export const useAccessManager = () => {
     isLoading: isFetching,
     mutate: reloadUserInfo,
   } = useSWR(
-    account && contract ? ["accountInfo", account] : null,
-    () => service.getAccountInfo(account as string),
+    isServiceReady ? ["accountInfo", account] : null,
+    () => service!.getAccountInfo(account as string),
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
@@ -47,7 +53,10 @@ export const useAccessManager = () => {
   const isUserInfoLoading = !data && !error && isFetching;
   const userInfo = getUserInfo(data);
 
-  const getAllAccounts = async () => await service.getAllAccounts();
+  const getAllAccounts = async () => {
+    if (!service) return [];
+    return service.getAllAccounts();
+  };
 
   useEffect(() => {
     if (userInfo) {
@@ -64,10 +73,11 @@ export const useAccessManager = () => {
   return {
     userInfo,
     isUserInfoLoading,
+    isServiceReady,
     error,
     reloadUserInfo,
-    requestRole: service.requestRole,
-    approveRole: service.approveRole,
+    requestRole: service?.requestRole,
+    approveRole: service?.approveRole,
     getAllAccounts,
   };
 };
