@@ -9,21 +9,29 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import { useAccessManager } from "@hooks/useAccessManager";
 import { CardLayout } from "../../layouts";
 import { UserRole } from "../../interfaces";
 
 const RequestRole = () => {
+  const navigate = useNavigate();
   const [role, setRole] = useState<UserRole | null>(null);
-  const { requestRole } = useAccessManager();
+  const [isLoading, setIsLoading] = useState(false);
+  const { requestRole, reloadUserInfo } = useAccessManager();
 
-  function handleRequestRole() {
-    console.log("Solicitud de rol:", role);
-    requestRole?.(role!).catch((err) => {
-      console.error("Error al solicitar el rol:", err);
-      alert(`Error al solicitar el rol: ${err.message}`);
-    });
+  async function handleRequestRole() {
+    try {
+      setIsLoading(true);
+      await requestRole?.(role!);
+      await reloadUserInfo?.();
+      navigate("/dashboard");
+    } catch (err) {
+      alert(`Error al solicitar el rol: ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -91,6 +99,7 @@ const RequestRole = () => {
         <Button
           disabled={!role}
           fullWidth
+          loading={isLoading}
           startIcon={<ArrowRight />}
           onClick={handleRequestRole}
         >

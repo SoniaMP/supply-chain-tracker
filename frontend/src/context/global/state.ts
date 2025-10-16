@@ -7,7 +7,7 @@ export const useGlobalState = () => {
     isServiceReady,
     isUserInfoLoading,
     requestRole,
-    approveRole,
+    approveAccount,
   } = useAccessManager();
 
   useEffect(() => {
@@ -21,6 +21,6 @@ export const useGlobalState = () => {
     isServiceReady,
     isUserInfoLoading,
     requestRole,
-    approveRole,
+    approveAccount,
   };
 };

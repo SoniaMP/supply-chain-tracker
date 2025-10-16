@@ -3,10 +3,6 @@ pragma solidity ^0.8.20;
 
 import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
 
-/**
- * @title AccessManager
- * @dev Sistema de gestión de acceso con solicitud de roles y estados de cuenta.
- */
 contract AccessManager is AccessControl {
     // --- Roles ---
     bytes32 public constant ADMIN = keccak256("ADMIN");
@@ -35,9 +31,10 @@ contract AccessManager is AccessControl {
         uint8 status;
     }
 
+    // --- Storage ---
     mapping(address => Account) private accounts;
-    mapping(bytes32 => address[]) private _roleMembers;
-    mapping(bytes32 => mapping(address => bool)) private _isInRoleMembers;
+    address[] private _allAccounts;
+    mapping(address => bool) private _accountExists;
 
     // --- Eventos ---
     event RoleRequested(address indexed account, bytes32 indexed role);
@@ -48,22 +45,38 @@ contract AccessManager is AccessControl {
     // --- Constructor ---
     constructor(address _admin) {
         require(_admin != address(0), "Admin cannot be zero address");
+
         _grantRole(ADMIN, _admin);
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
 
-        // Registrar al admin como Approved
-        accounts[_admin] = Account(ADMIN, uint8(AccountStatus.Approved));
-        _roleMembers[ADMIN].push(_admin);
-        _isInRoleMembers[ADMIN][_admin] = true;
+        accounts[_admin] = Account({
+            role: ADMIN,
+            status: uint8(AccountStatus.Approved)
+        });
+
+        _allAccounts.push(_admin);
+        _accountExists[_admin] = true;
     }
 
     // --- Solicitud de rol ---
     function requestRole(bytes32 role) external {
         require(isValidRole(role), "Invalid role");
         Account storage acc = accounts[msg.sender];
-        require(acc.status == 0, "Already requested or processed");
+        require(
+            acc.status == uint8(AccountStatus.None),
+            "Already requested or processed"
+        );
 
-        accounts[msg.sender] = Account(role, uint8(AccountStatus.Pending));
+        accounts[msg.sender] = Account({
+            role: role,
+            status: uint8(AccountStatus.Pending)
+        });
+
+        if (!_accountExists[msg.sender]) {
+            _allAccounts.push(msg.sender);
+            _accountExists[msg.sender] = true;
+        }
+
         emit RoleRequested(msg.sender, role);
     }
 
@@ -71,13 +84,9 @@ contract AccessManager is AccessControl {
     function approveAccount(address account) external onlyRole(ADMIN) {
         Account storage acc = accounts[account];
         require(acc.status == uint8(AccountStatus.Pending), "Not pending");
-        acc.status = uint8(AccountStatus.Approved);
 
+        acc.status = uint8(AccountStatus.Approved);
         _grantRole(acc.role, account);
-        if (!_isInRoleMembers[acc.role][account]) {
-            _roleMembers[acc.role].push(account);
-            _isInRoleMembers[acc.role][account] = true;
-        }
 
         emit AccountApproved(account, acc.role);
     }
@@ -85,7 +94,7 @@ contract AccessManager is AccessControl {
     // --- Rechazo ---
     function rejectAccount(address account) external onlyRole(ADMIN) {
         Account storage acc = accounts[account];
-        require(acc.status == uint8(AccountStatus.Pending), "Not pending");
+
         acc.status = uint8(AccountStatus.Rejected);
         emit AccountRejected(account);
     }
@@ -94,9 +103,10 @@ contract AccessManager is AccessControl {
     function cancelAccount(address account) external onlyRole(ADMIN) {
         Account storage acc = accounts[account];
         require(acc.status == uint8(AccountStatus.Approved), "Not approved");
-        acc.status = uint8(AccountStatus.Canceled);
 
+        acc.status = uint8(AccountStatus.Canceled);
         _revokeRole(acc.role, account);
+
         emit AccountCanceled(account);
     }
 
@@ -108,10 +118,23 @@ contract AccessManager is AccessControl {
         return (user, acc.role, acc.status);
     }
 
-    function getAccountsByRole(
-        bytes32 role
-    ) external view returns (address[] memory) {
-        return _roleMembers[role];
+    function getAllAccounts()
+        external
+        view
+        returns (AccountView[] memory list)
+    {
+        uint256 total = _allAccounts.length;
+        list = new AccountView[](total);
+
+        for (uint256 i = 0; i < total; i++) {
+            address member = _allAccounts[i];
+            Account storage acc = accounts[member];
+            list[i] = AccountView({
+                account: member,
+                role: acc.role,
+                status: acc.status
+            });
+        }
     }
 
     function hasActiveRole(
@@ -122,43 +145,6 @@ contract AccessManager is AccessControl {
         return
             acc.status == uint8(AccountStatus.Approved) &&
             hasRole(role, account);
-    }
-
-    function getAllAccounts()
-        external
-        view
-        returns (AccountView[] memory list)
-    {
-        uint256 total = 0;
-        bytes32[5] memory allRoles = [
-            ADMIN,
-            CONSUMER,
-            RETAILER,
-            FACTORY,
-            PRODUCER
-        ];
-
-        for (uint256 r = 0; r < allRoles.length; r++) {
-            total += _roleMembers[allRoles[r]].length;
-        }
-
-        list = new AccountView[](total);
-
-        uint256 idx = 0;
-        for (uint256 r = 0; r < allRoles.length; r++) {
-            address[] memory members = _roleMembers[allRoles[r]];
-            for (uint256 m = 0; m < members.length; m++) {
-                address member = members[m];
-                Account storage acc = accounts[member];
-
-                list[idx] = AccountView({
-                    account: member,
-                    role: acc.role,
-                    status: acc.status
-                });
-                idx++;
-            }
-        }
     }
 
     // --- Validaciones ---

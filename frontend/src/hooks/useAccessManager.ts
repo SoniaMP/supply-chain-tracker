@@ -77,7 +77,8 @@ export const useAccessManager = () => {
     error,
     reloadUserInfo,
     requestRole: service?.requestRole,
-    approveRole: service?.approveRole,
+    approveAccount: service?.approveAccount,
+    rejectAccount: service?.rejectAccount,
     getAllAccounts,
   };
 };

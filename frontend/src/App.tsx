@@ -8,20 +8,18 @@ import AdminPanel from "@components/Admin";
 import RouteLayout from "./layout/RouteLayout";
 
 const App = () => {
-  console.log("++++++++++++App rendered");
   return (
     <>
       <Header />
-
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route element={<RouteLayout />}>
-          <Route path="/request-role" element={<RequestRole />} />
-          <Route path="/dashboard" element={<DashboardRouter />} />
-          <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/roles" element={<div>Roles page ...</div>} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<RouteLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="request-role" element={<RequestRole />} />
+          <Route path="dashboard" element={<DashboardRouter />} />
+          <Route path="admin-panel" element={<AdminPanel />} />
+          <Route path="roles" element={<div>Roles page ...</div>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

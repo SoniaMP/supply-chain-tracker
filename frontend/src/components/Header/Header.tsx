@@ -20,8 +20,9 @@ import { formatAddress } from "../../utils/helpers";
 import RoleButtons from "./RoleButtons";
 import { mapRoleToLabel } from "../../interfaces";
 
-const Header = () => {
+const HeaderButtons = () => {
   const navigate = useNavigate();
+
   const {
     account,
     isConnecting,
@@ -34,6 +35,59 @@ const Header = () => {
   function handleNavigateDashboard() {
     navigate("/dashboard");
   }
+
+  return (
+    isMetamaskInstalled && (
+      <>
+        {account ? (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Stack spacing={0.5} direction="row" alignItems="center">
+              <AccountIcon />
+              {userInfo.role && (
+                <Typography variant="caption">
+                  {mapRoleToLabel[userInfo.role]}
+                </Typography>
+              )}
+            </Stack>
+            <Tooltip title={account} arrow>
+              <HeaderChip
+                label={formatAddress(account)}
+                size="medium"
+                variant="outlined"
+              />
+            </Tooltip>
+            <Button
+              startIcon={<DashboardIcon />}
+              onClick={handleNavigateDashboard}
+            >
+              Dashboard
+            </Button>
+            <RoleButtons />
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={disconnectWallet}
+              startIcon={<LogoutIcon />}
+            >
+              Cerrar sesión
+            </Button>
+          </Stack>
+        ) : (
+          <Button
+            onClick={connectWallet}
+            loading={isConnecting}
+            startIcon={<WalletIcon />}
+          >
+            {isConnecting ? "Conectando..." : "Conectar Wallet"}
+          </Button>
+        )}
+      </>
+    )
+  );
+};
+
+const Header = () => {
+  const { userInfo } = useGlobal();
 
   return (
     <AppBar position="static">
@@ -51,52 +105,7 @@ const Header = () => {
           <Typography variant="h6">Supply Chain Tracker</Typography>
         </Box>
 
-        {isMetamaskInstalled && (
-          <>
-            {account ? (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Stack spacing={0.5} direction="row" alignItems="center">
-                  <AccountIcon />
-                  {userInfo?.role && (
-                    <Typography variant="caption">
-                      {mapRoleToLabel[userInfo.role]}
-                    </Typography>
-                  )}
-                </Stack>
-                <Tooltip title={account} arrow>
-                  <HeaderChip
-                    label={formatAddress(account)}
-                    size="medium"
-                    variant="outlined"
-                  />
-                </Tooltip>
-                <Button
-                  startIcon={<DashboardIcon />}
-                  onClick={handleNavigateDashboard}
-                >
-                  Dashboard
-                </Button>
-                <RoleButtons />
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  onClick={disconnectWallet}
-                  startIcon={<LogoutIcon />}
-                >
-                  Cerrar sesión
-                </Button>
-              </Stack>
-            ) : (
-              <Button
-                onClick={connectWallet}
-                loading={isConnecting}
-                startIcon={<WalletIcon />}
-              >
-                {isConnecting ? "Conectando..." : "Conectar Wallet"}
-              </Button>
-            )}
-          </>
-        )}
+        {userInfo && <HeaderButtons />}
       </Toolbar>
     </AppBar>
   );

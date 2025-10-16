@@ -22,8 +22,18 @@ contract AccessManagerTest is Test {
 
     // --- 1️⃣ Deploy ---
     function test_AdminHasRoleAfterDeploy() public view {
-        assertTrue(manager.hasRole(ADMIN, admin));
-        assertTrue(manager.hasRole(manager.DEFAULT_ADMIN_ROLE(), admin));
+        assertTrue(manager.hasRole(ADMIN, admin), "Admin role missing");
+        assertTrue(
+            manager.hasRole(manager.DEFAULT_ADMIN_ROLE(), admin),
+            "Default admin role missing"
+        );
+
+        (address account, bytes32 role, uint8 status) = manager.getAccountInfo(
+            admin
+        );
+        assertEq(account, admin);
+        assertEq(role, ADMIN);
+        assertEq(status, uint8(AccessManager.AccountStatus.Approved));
     }
 
     // --- 2️⃣ Solicitud de rol ---
@@ -52,7 +62,7 @@ contract AccessManagerTest is Test {
         vm.stopPrank();
     }
 
-    // --- 3️⃣ Aprobación de cuenta ---
+    // --- 3️⃣ Aprobación ---
     function test_AdminCanApproveAccount() public {
         vm.startPrank(user1);
         manager.requestRole(CONSUMER);
@@ -117,21 +127,7 @@ contract AccessManagerTest is Test {
         vm.stopPrank();
     }
 
-    // --- 6️⃣ Listados y consultas ---
-    function test_GetAccountsByRole() public {
-        vm.startPrank(user1);
-        manager.requestRole(CONSUMER);
-        vm.stopPrank();
-
-        vm.startPrank(admin);
-        manager.approveAccount(user1);
-        vm.stopPrank();
-
-        address[] memory consumers = manager.getAccountsByRole(CONSUMER);
-        assertEq(consumers.length, 1);
-        assertEq(consumers[0], user1);
-    }
-
+    // --- 6️⃣ Roles activos ---
     function test_HasActiveRole() public {
         vm.startPrank(user1);
         manager.requestRole(CONSUMER);
@@ -146,7 +142,7 @@ contract AccessManagerTest is Test {
 
     // --- 7️⃣ Listado completo ---
     function test_GetAllAccounts() public {
-        // User1 as CONSUMER
+        // User1 solicita y se aprueba
         vm.startPrank(user1);
         manager.requestRole(CONSUMER);
         vm.stopPrank();
@@ -155,7 +151,7 @@ contract AccessManagerTest is Test {
         manager.approveAccount(user1);
         vm.stopPrank();
 
-        // User2 as RETAILER
+        // User2 solicita y se aprueba
         vm.startPrank(user2);
         manager.requestRole(RETAILER);
         vm.stopPrank();
@@ -164,29 +160,45 @@ contract AccessManagerTest is Test {
         manager.approveAccount(user2);
         vm.stopPrank();
 
+        // Obtener todas las cuentas
         AccessManager.AccountView[] memory accounts = manager.getAllAccounts();
 
-        assertEq(accounts.length, 3);
+        // Debe haber 3: admin + user1 + user2
+        assertEq(accounts.length, 3, "Expected 3 accounts total");
 
-        assertEq(accounts[0].account, admin);
-        assertEq(accounts[0].role, ADMIN);
-        assertEq(
-            accounts[0].status,
-            uint8(AccessManager.AccountStatus.Approved)
-        );
+        bool adminFound;
+        bool user1Found;
+        bool user2Found;
 
-        assertEq(accounts[1].account, user1);
-        assertEq(accounts[1].role, CONSUMER);
-        assertEq(
-            accounts[1].status,
-            uint8(AccessManager.AccountStatus.Approved)
-        );
+        for (uint256 i = 0; i < accounts.length; i++) {
+            if (accounts[i].account == admin) {
+                adminFound = true;
+                assertEq(accounts[i].role, ADMIN);
+                assertEq(
+                    accounts[i].status,
+                    uint8(AccessManager.AccountStatus.Approved)
+                );
+            } else if (accounts[i].account == user1) {
+                user1Found = true;
+                assertEq(accounts[i].role, CONSUMER);
+                assertEq(
+                    accounts[i].status,
+                    uint8(AccessManager.AccountStatus.Approved)
+                );
+            } else if (accounts[i].account == user2) {
+                user2Found = true;
+                assertEq(accounts[i].role, RETAILER);
+                assertEq(
+                    accounts[i].status,
+                    uint8(AccessManager.AccountStatus.Approved)
+                );
+            } else {
+                fail("Unexpected account in list");
+            }
+        }
 
-        assertEq(accounts[2].account, user2);
-        assertEq(accounts[2].role, RETAILER);
-        assertEq(
-            accounts[2].status,
-            uint8(AccessManager.AccountStatus.Approved)
-        );
+        assertTrue(adminFound, "Admin not found");
+        assertTrue(user1Found, "User1 not found");
+        assertTrue(user2Found, "User2 not found");
     }
 }

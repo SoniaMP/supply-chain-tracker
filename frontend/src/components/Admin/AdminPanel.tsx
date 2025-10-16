@@ -4,7 +4,6 @@ import {
   Card,
   Chip,
   Container,
-  Grid,
   List,
   ListItem,
   ListItemAvatar,
@@ -22,19 +21,28 @@ import {
   mapStatusToLabel,
 } from "../../interfaces";
 import UserActions from "./UserActions";
+import Summary from "./Summary";
+import LoadingOverlay from "../../layout/LoadingOverlay";
 
 const AdminPanel = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [accounts, setAccounts] = useState<IAccountInfo[]>([]);
-  const { isServiceReady, approveRole, getAllAccounts } = useAccessManager();
-
-  console.log("Accounts in AdminPanel:", accounts);
+  const { isServiceReady, approveAccount, rejectAccount, getAllAccounts } =
+    useAccessManager();
 
   useEffect(() => {
     if (!isServiceReady) return;
 
     async function fetchData() {
-      const accounts = await getAllAccounts();
-      setAccounts(accounts);
+      try {
+        setIsLoading(true);
+        const accounts = await getAllAccounts();
+        setAccounts(accounts);
+      } catch (err) {
+        alert(`Error al cargar las cuentas: ${err}`);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     fetchData();
@@ -54,47 +62,39 @@ const AdminPanel = () => {
     }
   }
 
-  function handleApprove(account: string) {
-    console.log(`Approve account: ${account}`);
-    approveRole?.(account);
+  async function handleApprove(account: string) {
+    try {
+      setIsLoading(true);
+      await approveAccount?.(account);
+      const updatedAccounts = await getAllAccounts();
+      setAccounts(updatedAccounts);
+    } catch (err) {
+      alert(`Error al aprobar la cuenta: ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function handleReject(account: string) {
-    console.log(`Reject account: ${account}`);
-    // Lógica para rechazar la cuenta
-  }
-  function handleSetPending(account: string) {
-    console.log(`Set account to pending: ${account}`);
-    // Lógica para establecer la cuenta como pendiente
+  async function handleReject(account: string) {
+    try {
+      setIsLoading(true);
+      await rejectAccount?.(account);
+      const updatedAccounts = await getAllAccounts();
+      setAccounts(updatedAccounts);
+    } catch (err) {
+      alert(`Error al aprobar la cuenta: ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <Container sx={{ py: 4 }} maxWidth="lg">
       <Stack spacing={4}>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 3 }}>
-            <Card sx={{ p: 4 }}>
-              <Typography>Total</Typography>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Card sx={{ p: 4 }}>
-              <Typography>Pendiente</Typography>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Card sx={{ p: 4 }}>
-              <Typography>Aprobados</Typography>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Card sx={{ p: 4 }}>
-              <Typography>Rechazados</Typography>
-            </Card>
-          </Grid>
-        </Grid>
+        <Summary accounts={accounts} />
 
         <Card sx={{ p: 4 }}>
+          <LoadingOverlay loading={isLoading} />
           <Stack spacing={1} alignItems="start">
             <Stack direction="row" spacing={2} alignItems="center">
               <PeopleIcon />
@@ -108,7 +108,7 @@ const AdminPanel = () => {
             {accounts.length && (
               <List sx={{ width: "100%" }} disablePadding>
                 {accounts.map(({ account, role, status }, idx: number) => (
-                  <ListItem key={account} sx={{ p: 0 }}>
+                  <ListItem key={account} sx={{ py: 0.5 }}>
                     <Card
                       sx={{
                         p: 2,
@@ -144,7 +144,6 @@ const AdminPanel = () => {
                           />
                           <Box flexGrow={1} display="flex">
                             <UserActions
-                              onPending={() => handleSetPending(account)}
                               onApprove={() => handleApprove(account)}
                               onReject={() => handleReject(account)}
                             />

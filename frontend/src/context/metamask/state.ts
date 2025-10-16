@@ -60,7 +60,9 @@ export const useWalletState = () => {
 
           setAccount(account);
           setSigner(signer);
-          localStorage.setItem("connectedAccount", account);
+          // localStorage.setItem("connectedAccount", account);
+          localStorage.removeItem("connectedAccount");
+          localStorage.removeItem("userInfo");
         } catch (err) {
           console.error("Error updating provider/account:", err);
           setError("Error updating account");

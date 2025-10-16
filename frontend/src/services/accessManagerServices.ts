@@ -1,4 +1,4 @@
-import { getUiAccountsList } from "@utils/accessAdapters";
+import { getUiAccountsList, ROLES } from "@utils/accessAdapters";
 import { IAccountInfo } from "interfaces";
 
 export const accessManagerServices = (contract: any) => {
@@ -15,29 +15,71 @@ export const accessManagerServices = (contract: any) => {
     };
   }
 
-  async function requestRole(role: string) {
-    // Transform role to its hash representation
-    const tx = await contract.requestRole(role);
-    await tx.wait();
-    return true;
+  async function requestRole(role: string): Promise<void> {
+    const hashRole = ROLES[role as keyof typeof ROLES];
+    if (!hashRole) {
+      throw new Error(`Invalid role name: ${role}`);
+    }
+
+    try {
+      const tx = await contract.requestRole(hashRole);
+
+      const receipt = await tx.wait();
+
+      if (receipt.status === 1) {
+        return;
+      } else {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
   }
 
-  async function approveRole(account: string) {
-    const tx = await contract.approveRole(account);
-    await tx.wait();
-    return true;
+  async function approveAccount(account: string): Promise<void> {
+    try {
+      const tx = await contract.approveAccount(account);
+      const receipt = await tx.wait();
+
+      if (receipt.status === 1) {
+        return;
+      } else {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
   }
 
-  async function getAllAccounts() {
-    const tx = await contract.getAllAccounts();
-    console.log("All accounts raw:", tx);
-    return getUiAccountsList(tx);
+  async function rejectAccount(account: string): Promise<void> {
+    try {
+      const tx = await contract.rejectAccount(account);
+      const receipt = await tx.wait();
+
+      if (receipt.status === 1) {
+        return;
+      } else {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
+  async function getAllAccounts(): Promise<IAccountInfo[]> {
+    try {
+      const tx = await contract.getAllAccounts();
+      return getUiAccountsList(tx);
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
   }
 
   return {
     getAccountInfo,
     requestRole,
-    approveRole,
+    approveAccount,
+    rejectAccount,
     getAllAccounts,
   };
 };
