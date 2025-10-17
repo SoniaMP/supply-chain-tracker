@@ -11,6 +11,7 @@ import AccountIcon from "@mui/icons-material/AccountCircleOutlined";
 import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import RecycleIcon from "@mui/icons-material/RecyclingOutlined";
 import { useNavigate } from "react-router-dom";
 
 import { useGlobal } from "@context/global/provider";
@@ -101,8 +102,18 @@ const Header = () => {
             gap: 1,
           }}
         >
-          <WalletIcon />
-          <Typography variant="h6">Supply Chain Tracker</Typography>
+          <RecycleIcon />
+          <Stack spacing={1} direction="row" alignItems="center">
+            <Typography variant="h6">EcoTrack</Typography>
+            <Stack>
+              <Typography variant="body2">
+                Solución Ecológica aplicada a la cadena de suministro.
+              </Typography>
+              <Typography variant="caption">
+                Recicla: Tu huella verde, nuestro futuro.
+              </Typography>
+            </Stack>
+          </Stack>
         </Box>
 
         {userInfo && <HeaderButtons />}

@@ -2,12 +2,12 @@ import { Typography } from "@mui/material";
 
 import { CardLayout } from "../../../layouts";
 
-const Factory = () => {
+const Citizen = () => {
   return (
     <CardLayout>
-      <Typography>Factory Dashboard</Typography>
+      <Typography>Citizen Dashboard</Typography>
     </CardLayout>
   );
 };
 
-export default Factory;
+export default Citizen;

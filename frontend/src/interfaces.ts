@@ -1,17 +1,17 @@
 export const enum UserRole {
   ADMIN = "ADMIN",
-  CONSUMER = "CONSUMER",
-  RETAILER = "RETAILER",
-  FACTORY = "FACTORY",
-  PRODUCER = "PRODUCER",
+  CITIZEN = "CITIZEN",
+  TRANSPORTER = "TRANSPORTER",
+  PROCESSOR = "PROCESSOR",
+  REWARD_AUTHORITY = "REWARD_AUTHORITY",
 }
 
 export const mapRoleToLabel: Record<string, string> = {
   ADMIN: "Admin",
-  CONSUMER: "Consumer",
-  RETAILER: "Retailer",
-  FACTORY: "Factory",
-  PRODUCER: "Producer",
+  CITIZEN: "Citizen",
+  TRANSPORTER: "Transporter",
+  PROCESSOR: "Processor",
+  REWARD_AUTHORITY: "Reward Authority",
 };
 
 export enum AccountStatus {

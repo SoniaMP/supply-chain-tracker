@@ -2,12 +2,12 @@ import { Typography } from "@mui/material";
 
 import { CardLayout } from "../../../layouts";
 
-const Producer = () => {
+const Processor = () => {
   return (
     <CardLayout>
-      <Typography>Producer Dashboard</Typography>
+      <Typography>Processor Dashboard</Typography>
     </CardLayout>
   );
 };
 
-export default Producer;
+export default Processor;

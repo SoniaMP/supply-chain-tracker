@@ -6,10 +6,10 @@ import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessContr
 contract AccessManager is AccessControl {
     // --- Roles ---
     bytes32 public constant ADMIN = keccak256("ADMIN");
-    bytes32 public constant CONSUMER = keccak256("CONSUMER");
-    bytes32 public constant RETAILER = keccak256("RETAILER");
-    bytes32 public constant FACTORY = keccak256("FACTORY");
-    bytes32 public constant PRODUCER = keccak256("PRODUCER");
+    bytes32 public constant CITIZEN = keccak256("CITIZEN");
+    bytes32 public constant TRANSPORTER = keccak256("TRANSPORTER");
+    bytes32 public constant PROCESSOR = keccak256("PROCESSOR");
+    bytes32 public constant REWARD_AUTHORITY = keccak256("REWARD_AUTHORITY");
 
     // --- Estados ---
     enum AccountStatus {
@@ -151,18 +151,18 @@ contract AccessManager is AccessControl {
     function isValidRole(bytes32 role) public pure returns (bool) {
         return
             role == ADMIN ||
-            role == CONSUMER ||
-            role == RETAILER ||
-            role == FACTORY ||
-            role == PRODUCER;
+            role == CITIZEN ||
+            role == TRANSPORTER ||
+            role == PROCESSOR ||
+            role == REWARD_AUTHORITY;
     }
 
     function getRoleName(bytes32 role) external pure returns (string memory) {
         if (role == ADMIN) return "ADMIN";
-        if (role == CONSUMER) return "CONSUMER";
-        if (role == RETAILER) return "RETAILER";
-        if (role == FACTORY) return "FACTORY";
-        if (role == PRODUCER) return "PRODUCER";
+        if (role == CITIZEN) return "CITIZEN";
+        if (role == TRANSPORTER) return "TRANSPORTER";
+        if (role == PROCESSOR) return "PROCESSOR";
+        if (role == REWARD_AUTHORITY) return "REWARD_AUTHORITY";
         return "UNKNOWN";
     }
 }

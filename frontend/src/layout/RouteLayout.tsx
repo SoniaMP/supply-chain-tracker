@@ -1,9 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { Backdrop, CircularProgress } from "@mui/material";
 
+import Header from "@components/Header";
 import { useWallet } from "@context/metamask/provider";
 import { useGlobal } from "@context/global/provider";
 import { UserRole } from "../interfaces";
+import LoadingOverlay from "./LoadingOverlay";
 
 const RouteLayout = () => {
   const { account } = useWallet();
@@ -14,11 +15,7 @@ const RouteLayout = () => {
   }
 
   if (!isServiceReady || isUserInfoLoading) {
-    return (
-      <Backdrop open>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    );
+    return <LoadingOverlay loading={true} />;
   }
 
   if (!userInfo && location.pathname !== "/request-role") {
@@ -33,7 +30,12 @@ const RouteLayout = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Header />
+      <Outlet />
+    </>
+  );
 };
 
 export default RouteLayout;

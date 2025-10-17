@@ -2,12 +2,12 @@ import { Typography } from "@mui/material";
 
 import { CardLayout } from "../../../layouts";
 
-const Consumer = () => {
+const Transporter = () => {
   return (
     <CardLayout>
-      <Typography>Consumer Dashboard</Typography>
+      <Typography>Transporter Dashboard</Typography>
     </CardLayout>
   );
 };
 
-export default Consumer;
+export default Transporter;

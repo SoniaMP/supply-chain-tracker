@@ -3,11 +3,17 @@ import { UserRole, type IAccountInfo } from "../interfaces";
 
 // --- Roles definidos en el contrato (hashes de keccak256) ---
 export const ROLES: Record<string, string> = {
-  [UserRole.ADMIN]: ethers.keccak256(ethers.toUtf8Bytes("ADMIN")),
-  [UserRole.CONSUMER]: ethers.keccak256(ethers.toUtf8Bytes("CONSUMER")),
-  [UserRole.RETAILER]: ethers.keccak256(ethers.toUtf8Bytes("RETAILER")),
-  [UserRole.FACTORY]: ethers.keccak256(ethers.toUtf8Bytes("FACTORY")),
-  [UserRole.PRODUCER]: ethers.keccak256(ethers.toUtf8Bytes("PRODUCER")),
+  [UserRole.ADMIN]: ethers.keccak256(ethers.toUtf8Bytes(UserRole.ADMIN)),
+  [UserRole.CITIZEN]: ethers.keccak256(ethers.toUtf8Bytes(UserRole.CITIZEN)),
+  [UserRole.TRANSPORTER]: ethers.keccak256(
+    ethers.toUtf8Bytes(UserRole.TRANSPORTER)
+  ),
+  [UserRole.PROCESSOR]: ethers.keccak256(
+    ethers.toUtf8Bytes(UserRole.PROCESSOR)
+  ),
+  [UserRole.REWARD_AUTHORITY]: ethers.keccak256(
+    ethers.toUtf8Bytes(UserRole.REWARD_AUTHORITY)
+  ),
 } as const;
 
 // --- Mapa inverso para decodificar desde la blockchain ---

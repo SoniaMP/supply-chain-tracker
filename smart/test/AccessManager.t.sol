@@ -11,10 +11,10 @@ contract AccessManagerTest is Test {
     address public user2 = address(3);
 
     bytes32 constant ADMIN = keccak256("ADMIN");
-    bytes32 constant CONSUMER = keccak256("CONSUMER");
-    bytes32 constant RETAILER = keccak256("RETAILER");
-    bytes32 constant FACTORY = keccak256("FACTORY");
-    bytes32 constant PRODUCER = keccak256("PRODUCER");
+    bytes32 constant CITIZEN = keccak256("CITIZEN");
+    bytes32 constant TRANSPORTER = keccak256("TRANSPORTER");
+    bytes32 constant PROCESSOR = keccak256("PROCESSOR");
+    bytes32 constant REWARD_AUTHORITY = keccak256("REWARD_AUTHORITY");
 
     function setUp() public {
         manager = new AccessManager(admin);
@@ -39,11 +39,11 @@ contract AccessManagerTest is Test {
     // --- 2️⃣ Solicitud de rol ---
     function test_UserCanRequestRole() public {
         vm.startPrank(user1);
-        manager.requestRole(CONSUMER);
+        manager.requestRole(CITIZEN);
         vm.stopPrank();
 
         (, bytes32 role, uint8 status) = manager.getAccountInfo(user1);
-        assertEq(role, CONSUMER);
+        assertEq(role, CITIZEN);
         assertEq(status, uint8(AccessManager.AccountStatus.Pending));
     }
 
@@ -56,16 +56,16 @@ contract AccessManagerTest is Test {
 
     function test_RevertIfAlreadyRequested() public {
         vm.startPrank(user1);
-        manager.requestRole(RETAILER);
+        manager.requestRole(TRANSPORTER);
         vm.expectRevert("Already requested or processed");
-        manager.requestRole(RETAILER);
+        manager.requestRole(TRANSPORTER);
         vm.stopPrank();
     }
 
     // --- 3️⃣ Aprobación ---
     function test_AdminCanApproveAccount() public {
         vm.startPrank(user1);
-        manager.requestRole(CONSUMER);
+        manager.requestRole(CITIZEN);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -73,9 +73,9 @@ contract AccessManagerTest is Test {
         vm.stopPrank();
 
         (, bytes32 role, uint8 status) = manager.getAccountInfo(user1);
-        assertEq(role, CONSUMER);
+        assertEq(role, CITIZEN);
         assertEq(status, uint8(AccessManager.AccountStatus.Approved));
-        assertTrue(manager.hasRole(CONSUMER, user1));
+        assertTrue(manager.hasRole(CITIZEN, user1));
     }
 
     function test_RevertIfNotPendingOnApprove() public {
@@ -88,7 +88,7 @@ contract AccessManagerTest is Test {
     // --- 4️⃣ Rechazo ---
     function test_AdminCanRejectAccount() public {
         vm.startPrank(user1);
-        manager.requestRole(RETAILER);
+        manager.requestRole(TRANSPORTER);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -97,13 +97,13 @@ contract AccessManagerTest is Test {
 
         (, , uint8 status) = manager.getAccountInfo(user1);
         assertEq(status, uint8(AccessManager.AccountStatus.Rejected));
-        assertFalse(manager.hasRole(RETAILER, user1));
+        assertFalse(manager.hasRole(TRANSPORTER, user1));
     }
 
     // --- 5️⃣ Cancelación ---
     function test_AdminCanCancelAccount() public {
         vm.startPrank(user1);
-        manager.requestRole(FACTORY);
+        manager.requestRole(PROCESSOR);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -113,12 +113,12 @@ contract AccessManagerTest is Test {
 
         (, , uint8 status) = manager.getAccountInfo(user1);
         assertEq(status, uint8(AccessManager.AccountStatus.Canceled));
-        assertFalse(manager.hasRole(FACTORY, user1));
+        assertFalse(manager.hasRole(PROCESSOR, user1));
     }
 
     function test_RevertIfCancelWithoutApproval() public {
         vm.startPrank(user1);
-        manager.requestRole(PRODUCER);
+        manager.requestRole(REWARD_AUTHORITY);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -130,21 +130,21 @@ contract AccessManagerTest is Test {
     // --- 6️⃣ Roles activos ---
     function test_HasActiveRole() public {
         vm.startPrank(user1);
-        manager.requestRole(CONSUMER);
+        manager.requestRole(CITIZEN);
         vm.stopPrank();
 
         vm.startPrank(admin);
         manager.approveAccount(user1);
         vm.stopPrank();
 
-        assertTrue(manager.hasActiveRole(user1, CONSUMER));
+        assertTrue(manager.hasActiveRole(user1, CITIZEN));
     }
 
     // --- 7️⃣ Listado completo ---
     function test_GetAllAccounts() public {
         // User1 solicita y se aprueba
         vm.startPrank(user1);
-        manager.requestRole(CONSUMER);
+        manager.requestRole(CITIZEN);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -153,7 +153,7 @@ contract AccessManagerTest is Test {
 
         // User2 solicita y se aprueba
         vm.startPrank(user2);
-        manager.requestRole(RETAILER);
+        manager.requestRole(TRANSPORTER);
         vm.stopPrank();
 
         vm.startPrank(admin);
@@ -180,14 +180,14 @@ contract AccessManagerTest is Test {
                 );
             } else if (accounts[i].account == user1) {
                 user1Found = true;
-                assertEq(accounts[i].role, CONSUMER);
+                assertEq(accounts[i].role, CITIZEN);
                 assertEq(
                     accounts[i].status,
                     uint8(AccessManager.AccountStatus.Approved)
                 );
             } else if (accounts[i].account == user2) {
                 user2Found = true;
-                assertEq(accounts[i].role, RETAILER);
+                assertEq(accounts[i].role, TRANSPORTER);
                 assertEq(
                     accounts[i].status,
                     uint8(AccessManager.AccountStatus.Approved)

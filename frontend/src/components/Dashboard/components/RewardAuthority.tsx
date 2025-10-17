@@ -2,12 +2,12 @@ import { Typography } from "@mui/material";
 
 import { CardLayout } from "../../../layouts";
 
-const Retailer = () => {
+const RewardAuthority = () => {
   return (
     <CardLayout>
-      <Typography>Retailer Dashboard</Typography>
+      <Typography>Reward Authority Dashboard</Typography>
     </CardLayout>
   );
 };
 
-export default Retailer;
+export default RewardAuthority;

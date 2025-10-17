@@ -58,10 +58,10 @@ const RequestRole = () => {
           sx={{ padding: 0 }}
           onChange={(e) => setRole(e.target.value as UserRole)}
         >
-          <MenuItem value={UserRole.CONSUMER}>Consumidor</MenuItem>
-          <MenuItem value={UserRole.PRODUCER}>Productor</MenuItem>
-          <MenuItem value={UserRole.RETAILER}>Minorista</MenuItem>
-          <MenuItem value={UserRole.FACTORY}>Mayorista</MenuItem>
+          <MenuItem value={UserRole.CITIZEN}>Ciudadano</MenuItem>
+          <MenuItem value={UserRole.TRANSPORTER}>Transportista</MenuItem>
+          <MenuItem value={UserRole.PROCESSOR}>Procesador</MenuItem>
+          <MenuItem value={UserRole.REWARD_AUTHORITY}>Regulador</MenuItem>
         </Select>
 
         <Box
@@ -79,20 +79,23 @@ const RequestRole = () => {
             Descripción roles
           </Typography>
           <Typography variant="body2">
-            <strong>Fabricante:</strong> Crea y produce productos, iniciando su
-            viaje en la cadena de suministro.
+            <strong>Ciudadano:</strong> Recolecta y deposita productos para su
+            reciclaje.
           </Typography>
           <Typography variant="body2">
-            <strong>Distribuidor:</strong> Gestiona la logística y distribución
-            de productos desde los fabricantes hasta los minoristas.
+            <strong>Transportista:</strong> Se encarga del traslado de productos
+            reciclables entre ciudadanos, puntos de recolección y centros de
+            procesamiento.
           </Typography>
           <Typography variant="body2">
-            <strong>Minorista:</strong> Vende productos directamente a los
-            consumidores finales.
+            <strong>Procesador:</strong> Recibe productos reciclables y los
+            transforma en materiales reutilizables.
           </Typography>
           <Typography variant="body2">
-            <strong>Consumidor:</strong> Compra y utiliza los productos,
-            cerrando el ciclo de la cadena de suministro.
+            <strong>Autoridad Reguladora:</strong> Organización gubernamental o
+            comunitaria que supervisa y regula las actividades de reciclaje en
+            su jurisdicción. Es responsable de premiar a los ciudadanos que
+            reciclan correctamente.
           </Typography>
         </Box>
 

@@ -1,21 +1,21 @@
-import { useGlobal } from "@context/global/provider";
+import { Typography } from "@mui/material";
 
+import { useGlobal } from "@context/global/provider";
 import UnderRevision from "@components/UserAccess/UnderRevision";
 import { AccountStatus, UserRole } from "../../interfaces";
-import Consumer from "./components/Consumer";
 import Admin from "./components/Admin";
-import Retailer from "./components/Retailer";
-import Factory from "./components/Factory";
-import Producer from "./components/Producer";
 import { CardLayout } from "../../layouts";
-import { Typography } from "@mui/material";
+import Transporter from "./components/Transporter";
+import Citizen from "./components/Citizen";
+import Processor from "./components/Processor";
+import RewardAuthority from "./components/RewardAuthority";
 
 const mappingRolesToComponents: { [key in UserRole]: React.FC } = {
   [UserRole.ADMIN]: Admin,
-  [UserRole.CONSUMER]: Consumer,
-  [UserRole.RETAILER]: Retailer,
-  [UserRole.FACTORY]: Factory,
-  [UserRole.PRODUCER]: Producer,
+  [UserRole.CITIZEN]: Citizen,
+  [UserRole.TRANSPORTER]: Transporter,
+  [UserRole.PROCESSOR]: Processor,
+  [UserRole.REWARD_AUTHORITY]: RewardAuthority,
 };
 
 const DashboardRouter = () => {

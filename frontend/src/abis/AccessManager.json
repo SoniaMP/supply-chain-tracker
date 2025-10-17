@@ -15,7 +15,7 @@
   },
   {
     "type": "function",
-    "name": "CONSUMER",
+    "name": "CITIZEN",
     "inputs": [],
     "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
     "stateMutability": "view"
@@ -29,21 +29,21 @@
   },
   {
     "type": "function",
-    "name": "FACTORY",
+    "name": "PROCESSOR",
     "inputs": [],
     "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "PRODUCER",
+    "name": "REWARD_AUTHORITY",
     "inputs": [],
     "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "RETAILER",
+    "name": "TRANSPORTER",
     "inputs": [],
     "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
     "stateMutability": "view"
