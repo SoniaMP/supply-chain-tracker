@@ -1,12 +1,17 @@
 import { useWallet } from "@context/metamask/provider";
 import { ethers } from "ethers";
 import AccessManagerAbi from "../abis/AccessManager.json";
+import TraceabilityAbi from "../abis/Traceability.json";
 import { useEffect, useState } from "react";
 
 const CONTRACTS = {
   AccessManager: {
     address: import.meta.env.VITE_ACCESS_MANAGER_ADDRESS,
     abi: AccessManagerAbi,
+  },
+  Traceability: {
+    address: import.meta.env.VITE_TRACEABILITY_ADDRESS,
+    abi: TraceabilityAbi,
   },
 };
 

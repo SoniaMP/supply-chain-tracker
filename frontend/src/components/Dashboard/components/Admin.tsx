@@ -1,13 +1,7 @@
-import { Typography } from "@mui/material";
-
-import { CardLayout } from "../../../layouts";
+import { Navigate } from "react-router-dom";
 
 const Admin = () => {
-  return (
-    <CardLayout>
-      <Typography>Admin Dashboard</Typography>
-    </CardLayout>
-  );
+  return <Navigate to="/admin-panel" replace />;
 };
 
 export default Admin;

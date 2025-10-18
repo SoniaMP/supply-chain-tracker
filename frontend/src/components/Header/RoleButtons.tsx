@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import { Button } from "@mui/material";
 
 import { useGlobal } from "@context/global/provider";
@@ -11,6 +12,18 @@ const RoleButtons = () => {
 
   function handleNavigateToAdminPanel() {
     navigate("/admin-panel");
+  }
+
+  function handleNavigateDashboard() {
+    navigate("/dashboard");
+  }
+
+  if (userInfo?.role !== UserRole.ADMIN) {
+    return (
+      <Button startIcon={<DashboardIcon />} onClick={handleNavigateDashboard}>
+        Dashboard
+      </Button>
+    );
   }
 
   if (userInfo?.role === UserRole.ADMIN) {

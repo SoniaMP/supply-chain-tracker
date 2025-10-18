@@ -2,6 +2,7 @@ import { Typography } from "@mui/material";
 
 import { useGlobal } from "@context/global/provider";
 import UnderRevision from "@components/UserAccess/UnderRevision";
+import RejectedAccount from "@components/UserAccess/RejectedAccount";
 import { AccountStatus, UserRole } from "../../interfaces";
 import Admin from "./components/Admin";
 import { CardLayout } from "../../layouts";
@@ -31,13 +32,7 @@ const DashboardRouter = () => {
       return <UnderRevision />;
 
     case AccountStatus.Rejected:
-      return (
-        <CardLayout>
-          <Typography>
-            Tu solicitud fue rechazada. Contacta con el administrador.
-          </Typography>
-        </CardLayout>
-      );
+      return <RejectedAccount />;
 
     case AccountStatus.Canceled:
       return (

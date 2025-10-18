@@ -83,7 +83,6 @@ contract AccessManager is AccessControl {
     // --- Aprobación ---
     function approveAccount(address account) external onlyRole(ADMIN) {
         Account storage acc = accounts[account];
-        require(acc.status == uint8(AccountStatus.Pending), "Not pending");
 
         acc.status = uint8(AccountStatus.Approved);
         _grantRole(acc.role, account);

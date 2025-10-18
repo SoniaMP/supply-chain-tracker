@@ -78,13 +78,6 @@ contract AccessManagerTest is Test {
         assertTrue(manager.hasRole(CITIZEN, user1));
     }
 
-    function test_RevertIfNotPendingOnApprove() public {
-        vm.startPrank(admin);
-        vm.expectRevert("Not pending");
-        manager.approveAccount(user1);
-        vm.stopPrank();
-    }
-
     // --- 4️⃣ Rechazo ---
     function test_AdminCanRejectAccount() public {
         vm.startPrank(user1);

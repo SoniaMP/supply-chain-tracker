@@ -8,11 +8,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import AccountIcon from "@mui/icons-material/AccountCircleOutlined";
-import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import RecycleIcon from "@mui/icons-material/RecyclingOutlined";
-import { useNavigate } from "react-router-dom";
 
 import { useGlobal } from "@context/global/provider";
 import { useWallet } from "@context/metamask/provider";
@@ -22,8 +20,6 @@ import RoleButtons from "./RoleButtons";
 import { mapRoleToLabel } from "../../interfaces";
 
 const HeaderButtons = () => {
-  const navigate = useNavigate();
-
   const {
     account,
     isConnecting,
@@ -32,10 +28,6 @@ const HeaderButtons = () => {
     disconnectWallet,
   } = useWallet();
   const { userInfo } = useGlobal();
-
-  function handleNavigateDashboard() {
-    navigate("/dashboard");
-  }
 
   return (
     isMetamaskInstalled && (
@@ -57,12 +49,6 @@ const HeaderButtons = () => {
                 variant="outlined"
               />
             </Tooltip>
-            <Button
-              startIcon={<DashboardIcon />}
-              onClick={handleNavigateDashboard}
-            >
-              Dashboard
-            </Button>
             <RoleButtons />
             <Button
               variant="outlined"
