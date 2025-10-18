@@ -156,12 +156,4 @@ contract AccessManager is AccessControl {
             role == REWARD_AUTHORITY;
     }
 
-    function getRoleName(bytes32 role) external pure returns (string memory) {
-        if (role == ADMIN) return "ADMIN";
-        if (role == CITIZEN) return "CITIZEN";
-        if (role == TRANSPORTER) return "TRANSPORTER";
-        if (role == PROCESSOR) return "PROCESSOR";
-        if (role == REWARD_AUTHORITY) return "REWARD_AUTHORITY";
-        return "UNKNOWN";
-    }
 }

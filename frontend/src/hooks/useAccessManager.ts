@@ -80,5 +80,6 @@ export const useAccessManager = () => {
     approveAccount: service?.approveAccount,
     rejectAccount: service?.rejectAccount,
     getAllAccounts,
+    getAccountInfo: service?.getAccountInfo,
   };
 };

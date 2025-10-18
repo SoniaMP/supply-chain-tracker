@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import {
   Avatar,
+  Box,
+  Chip,
   Dialog,
   Divider,
   Link,
@@ -10,17 +12,22 @@ import {
   ListItemAvatar,
   ListItemText,
   Paper,
+  Stack,
   Typography,
 } from "@mui/material";
 
 import { useTraceability } from "@hooks/useTraceability";
 
 import {
+  IAccountInfo,
   ITokenHistoryEntry,
   ITokenInfo,
+  mapRoleToLabel,
   mapTokenStageToLabel,
   TokenStage,
 } from "../../interfaces";
+import { useAccessManager } from "@hooks/useAccessManager";
+import { ROLE_NAMES } from "@utils/accessAdapters";
 
 const TokenHistory = ({
   token,
@@ -31,7 +38,11 @@ const TokenHistory = ({
 }) => {
   const [history, setHistory] = useState<ITokenHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [holderInfos, setHolderInfos] = useState<Record<string, IAccountInfo>>(
+    {}
+  );
   const { isServiceReady, getTokenHistory } = useTraceability();
+  const { getAccountInfo } = useAccessManager();
 
   useEffect(() => {
     if (!isServiceReady) return;
@@ -52,9 +63,29 @@ const TokenHistory = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isServiceReady]);
 
-  console.log("Token history:", history);
+  useEffect(() => {
+    if (!history?.length) return;
+
+    async function fetchRoles() {
+      const results: Record<string, IAccountInfo> = {};
+
+      for (const h of history) {
+        const { newHolder } = h;
+        if (newHolder && !results[newHolder]) {
+          if (getAccountInfo == null) continue;
+
+          const info = await getAccountInfo(newHolder);
+          results[newHolder] = info;
+        }
+      }
+
+      setHolderInfos(results);
+    }
+
+    fetchRoles();
+  }, [history, getAccountInfo]);
+
   if (isLoading) return <p>Cargando historial...</p>;
-  if (history.length === 0) return <p>No hay cambios de custodia.</p>;
 
   const getIcon = (stage: TokenStage) => {
     switch (stage) {
@@ -79,47 +110,66 @@ const TokenHistory = ({
         </Typography>
 
         <List>
-          {history.map((h, i) => (
-            <div key={i}>
-              <ListItem alignItems="flex-start">
-                <ListItemAvatar>
-                  <Avatar
-                    sx={{ bgcolor: "primary.light", width: 40, height: 40 }}
-                  >
-                    {getIcon(h.action)}
-                  </Avatar>
-                </ListItemAvatar>
+          {history.map((h, i) => {
+            const info = holderInfos[h.newHolder];
 
-                <ListItemText
-                  primary={
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {mapTokenStageToLabel[h.action]} —{" "}
-                      {h.newHolder.slice(0, 6)}...
-                      {h.newHolder.slice(-4)}
-                    </Typography>
-                  }
-                  secondary={
-                    <>
-                      <Typography variant="body2" color="text.secondary">
+            return (
+              <Box key={i}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Avatar
+                      sx={{ bgcolor: "primary.light", width: 40, height: 40 }}
+                    >
+                      {getIcon(h.action)}
+                    </Avatar>
+                  </ListItemAvatar>
+
+                  <ListItemText
+                    primary={
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {mapTokenStageToLabel[h.action]} —{" "}
+                        </Typography>
+                        <Chip
+                          variant="outlined"
+                          size="small"
+                          label={`${h.newHolder.slice(
+                            0,
+                            6
+                          )}...${h.newHolder.slice(-4)}`}
+                        />
+                        {info && (
+                          <Chip
+                            label={
+                              mapRoleToLabel[ROLE_NAMES[info.role]] ||
+                              "Desconocido"
+                            }
+                            size="small"
+                          />
+                        )}
+                      </Stack>
+                    }
+                    secondary={
+                      <>
                         {h.timestamp}
-                      </Typography>
-                      <Link
-                        href={`https://sepolia.etherscan.io/tx/${h.txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="caption"
-                        sx={{ display: "block", mt: 0.5 }}
-                      >
-                        Ver transacción
-                      </Link>
-                    </>
-                  }
-                />
-              </ListItem>
+                        <Link
+                          href={`https://sepolia.etherscan.io/tx/${h.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="caption"
+                          sx={{ display: "block", mt: 0.5 }}
+                        >
+                          Ver transacción
+                        </Link>
+                      </>
+                    }
+                  />
+                </ListItem>
 
-              {i < history.length - 1 && <Divider component="li" />}
-            </div>
-          ))}
+                {i < history.length - 1 && <Divider component="li" />}
+              </Box>
+            );
+          })}
         </List>
       </Paper>
     </Dialog>
