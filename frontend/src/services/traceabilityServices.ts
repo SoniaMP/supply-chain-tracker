@@ -1,5 +1,9 @@
-import { getUiTokenInfo } from "@utils/tokenAdapters";
-import { ITokenHistoryEntry, ITokenInfo } from "../interfaces";
+import {
+  getUiTokenHistoryEntry,
+  getUiTokenInfo,
+  getUiTokenTransfer,
+} from "@utils/tokenAdapters";
+import { ITokenHistoryEntry, ITokenInfo, TransferStatus } from "../interfaces";
 
 export const traceabilityServices = (contract: any) => {
   if (!contract) {
@@ -36,23 +40,63 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
+  async function collectToken(tokenId: number): Promise<void> {
+    try {
+      const tx = await contract.collectToken(tokenId);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
+  async function getAllTokens() {
+    try {
+      const tx = await contract.getAllTokens();
+      return tx.map((token: any) => getUiTokenInfo([token])[0]);
+    } catch (err) {
+      console.error("Error getting all tokens:", err);
+      return [];
+    }
+  }
+
   async function getTokenHistory(tokenId: number) {
     try {
       const filter = contract.filters.CustodyChanged(tokenId);
       const events = await contract.queryFilter(filter, 0, "latest");
-
-      return events.map(({ args }: { args: ITokenHistoryEntry }) => ({
-        id: Number(args.id),
-        previousHolder: args.previousHolder,
-        newHolder: args.newHolder,
-        action: args.action,
-        timestamp: new Date(Number(args.timestamp) * 1000).toLocaleString(),
-        txHash: args.txHash,
-      }));
+      return events.map(({ args }: { args: ITokenHistoryEntry }) =>
+        getUiTokenHistoryEntry(args)
+      );
     } catch (err) {
       console.error("Error logging tokenId:", err);
     }
   }
 
-  return { getTokensByUser, createToken, getTokenHistory };
+  async function getTransfers(status: TransferStatus = TransferStatus.None) {
+    try {
+      const tx = await contract.getTransfers(status);
+      let transfers = tx.map((t: any) => {
+        return getUiTokenTransfer(t);
+      });
+      if (status !== TransferStatus.None) {
+        transfers = transfers.filter((t: any) => t.status === status);
+      }
+      return transfers;
+    } catch (err) {
+      console.error("Error getting transfers:", err);
+      return [];
+    }
+  }
+
+  return {
+    getTokensByUser,
+    createToken,
+    getTokenHistory,
+    collectToken,
+    getAllTokens,
+    getTransfers,
+  };
 };

@@ -24,10 +24,11 @@ import {
   ITokenInfo,
   mapRoleToLabel,
   mapTokenStageToLabel,
-  TokenStage,
 } from "../../interfaces";
 import { useAccessManager } from "@hooks/useAccessManager";
 import { ROLE_NAMES } from "@utils/accessAdapters";
+import { formatAddress } from "@utils/helpers";
+import StageIcon from "./StageIcon";
 
 const TokenHistory = ({
   token,
@@ -87,21 +88,6 @@ const TokenHistory = ({
 
   if (isLoading) return <p>Cargando historial...</p>;
 
-  const getIcon = (stage: TokenStage) => {
-    switch (stage) {
-      case TokenStage.Created:
-        return "🧍";
-      case TokenStage.Collected:
-        return "🚛";
-      case TokenStage.Processed:
-        return "🏭";
-      case TokenStage.Rewarded:
-        return "🏛️";
-      default:
-        return "📦";
-    }
-  };
-
   return (
     <Dialog open={true} fullWidth maxWidth="sm" onClose={onClose}>
       <Paper sx={{ p: 2, borderRadius: 2 }} elevation={1}>
@@ -120,7 +106,7 @@ const TokenHistory = ({
                     <Avatar
                       sx={{ bgcolor: "primary.light", width: 40, height: 40 }}
                     >
-                      {getIcon(h.action)}
+                      <StageIcon stage={h.action} />
                     </Avatar>
                   </ListItemAvatar>
 
@@ -133,10 +119,7 @@ const TokenHistory = ({
                         <Chip
                           variant="outlined"
                           size="small"
-                          label={`${h.newHolder.slice(
-                            0,
-                            6
-                          )}...${h.newHolder.slice(-4)}`}
+                          label={formatAddress(h.newHolder)}
                         />
                         {info && (
                           <Chip
@@ -153,7 +136,7 @@ const TokenHistory = ({
                       <>
                         {h.timestamp}
                         <Link
-                          href={`https://sepolia.etherscan.io/tx/${h.txHash}`}
+                          href={`https://sepolia.etherscan.io/tx/${h.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           variant="caption"

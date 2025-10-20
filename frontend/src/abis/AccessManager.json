@@ -108,15 +108,6 @@
   },
   {
     "type": "function",
-    "name": "getRoleName",
-    "inputs": [
-      { "name": "role", "type": "bytes32", "internalType": "bytes32" }
-    ],
-    "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
     "name": "grantRole",
     "inputs": [
       { "name": "role", "type": "bytes32", "internalType": "bytes32" },

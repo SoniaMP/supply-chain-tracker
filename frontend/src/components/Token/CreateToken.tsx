@@ -64,17 +64,11 @@ const CreateToken = ({ open, role, onClose, onCreate }: CreateTokenProps) => {
       return;
     }
 
-    let additionalInfo: any = null;
-    try {
-      additionalInfo = additionalJson.trim()
-        ? JSON.parse(additionalJson)
-        : null;
-    } catch {
-      setError("El campo de información adicional debe ser un JSON válido.");
-      return;
-    }
-
-    onCreate({ name: name.trim(), total: totalNumber, additionalInfo });
+    onCreate({
+      name: name.trim(),
+      total: totalNumber,
+      additionalInfo: additionalJson.trim(),
+    });
     onClose();
   };
 

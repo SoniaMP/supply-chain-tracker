@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useWallet } from "@context/metamask/provider";
 
 import { useContractInstance } from "./useContracts";
-import { ContractNames } from "../interfaces";
+import { ContractNames, ITokenTransfer, TransferStatus } from "../interfaces";
 import { traceabilityServices } from "../services/traceabilityServices";
 
 export const useTraceability = () => {
@@ -23,6 +23,11 @@ export const useTraceability = () => {
     return tokens;
   }
 
+  async function getAllTokens() {
+    if (!service || !account) return [];
+    return service.getAllTokens();
+  }
+
   function createToken(
     name: string,
     totalSupply: number,
@@ -30,23 +35,22 @@ export const useTraceability = () => {
     parentId: number = 0
   ): Promise<void> {
     if (!service) return Promise.resolve();
-    console.log("Creating token via hook...", {
-      name,
-      totalSupply,
-      citizenFeatures,
-      parentId,
-    });
     return service.createToken(name, totalSupply, citizenFeatures, parentId);
   }
 
   function getTokenHistory(tokenId: number) {
-    console.log(
-      "Getting token history via hook for tokenId:",
-      tokenId,
-      service
-    );
     if (!service) return Promise.resolve([]);
     return service.getTokenHistory(tokenId);
+  }
+
+  function collectToken(tokenId: number): Promise<void> {
+    if (!service) return Promise.resolve();
+    return service.collectToken(tokenId);
+  }
+
+  function getTransfers(status?: TransferStatus): Promise<ITokenTransfer[]> {
+    if (!service) return Promise.resolve([]);
+    return service.getTransfers(status);
   }
 
   return {
@@ -55,5 +59,8 @@ export const useTraceability = () => {
     getTokensByUser,
     createToken,
     getTokenHistory,
+    collectToken,
+    getAllTokens,
+    getTransfers,
   };
 };

@@ -27,12 +27,26 @@ export enum AccountStatus {
   Canceled,
 }
 
+export enum TransferStatus {
+  None,
+  Pending,
+  Accepted,
+  Rejected,
+}
+
 export const mapRoleToLabel: Record<string, string> = {
   ADMIN: "Admin",
   CITIZEN: "Ciudadano",
   TRANSPORTER: "Transportista",
   PROCESSOR: "Procesador",
   REWARD_AUTHORITY: "Autoridad de Recompensas",
+};
+
+export const mapTransferStatusToLabel: Record<TransferStatus, string> = {
+  [TransferStatus.None]: "Ninguno",
+  [TransferStatus.Pending]: "Pendiente",
+  [TransferStatus.Accepted]: "Aceptado",
+  [TransferStatus.Rejected]: "Rechazado",
 };
 
 export const mapStatusToLabel: Record<AccountStatus, string> = {
@@ -76,9 +90,18 @@ export interface INewTokenForm {
 
 export interface ITokenHistoryEntry {
   id: number;
-  previousHolder: string;
   newHolder: string;
+  previousHolder: string;
   action: TokenStage;
   timestamp: string;
-  txHash: string;
+}
+
+export interface ITokenTransfer {
+  id: number;
+  tokenId: number;
+  from: string;
+  to: string;
+  amount: number;
+  status: TransferStatus;
+  timestamp: number;
 }
