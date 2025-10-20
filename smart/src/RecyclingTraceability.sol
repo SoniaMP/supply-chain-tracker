@@ -56,6 +56,46 @@ contract RecyclingTraceability {
         uint256 timestamp
     );
 
+    // --- Gestión de transferencias ----- 
+    enum TransferStatus {
+        None,
+        Pending,
+        Accepted,
+        Rejected
+    }
+
+    struct Transfer {
+        uint256 id;
+        uint256 tokenId;
+        address from;
+        address to;
+        uint256 amount;
+        TransferStatus status;
+        uint256 timestamp;
+    }
+
+    uint256 private _transferCounter;
+    mapping(uint256 => Transfer) private _transfers;
+
+    event TransferInitiated(
+        uint256 indexed transferId,
+        uint256 indexed tokenId,
+        address indexed from,
+        address to,
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    event TransferStatusChanged(
+        uint256 indexed transferId,
+        uint256 indexed tokenId,
+        address indexed from,
+        TransferStatus status,
+        uint256 timestamp
+    );
+
+    // --------
+
     modifier onlyRoleActive(bytes32 role) {
         require(
             accessManager.hasActiveRole(msg.sender, role),
@@ -69,7 +109,7 @@ contract RecyclingTraceability {
         accessManager = AccessManager(accessManagerAddr);
     }
 
-    // --- 1️⃣ Citizen: crea el token inicial ---
+    // --- Citizen: crea el token inicial ---
     function createToken(
         string memory name,
         uint256 totalSupply,
@@ -235,5 +275,103 @@ contract RecyclingTraceability {
                 index++;
             }
         }
+    }
+
+    /**
+    * @notice Inicia la transferencia de un tocken a un centro de procesamiento.
+    * Solo puede ejecutarlo un TRANSPORTER activo.
+    */
+    function transfer(address to, uint256 tokenId, uint256 amount) external onlyRoleActive(accessManager.TRANSPORTER()) {
+        Token storage t = _tokens[tokenId];
+        require(t.id != 0, "Token not found");
+        require(t.stage == Stage.Collected, "Token not collected yet");
+        require(t.currentHolder == msg.sender, "Not current holder");
+        require(accessManager.hasActiveRole(to, accessManager.PROCESSOR()), "Recipient must be Processor");
+        require(amount > 0 && amount <= t.totalSupply, "Invalid amount");
+
+        _transferCounter++;
+        uint256 newTransferId = _transferCounter;
+
+        _transfers[newTransferId] = Transfer({
+            id: newTransferId,
+            tokenId: tokenId,
+            from: msg.sender,
+            to: to,
+            amount: amount,
+            status: TransferStatus.Pending,
+            timestamp: block.timestamp
+        });
+
+        emit TransferInitiated(newTransferId, tokenId, msg.sender, to, amount, block.timestamp);
+    }
+
+    /**
+     * @notice Acepta o rechaza una transferencia pendiente.
+     * Solo puede ejecutarlo el PROCESSOR activo. 
+     */
+    function setTransferStatus(uint256 transferId, bool accept) external onlyRoleActive(accessManager.PROCESSOR()) {
+        Transfer storage tr = _transfers[transferId];
+        require(tr.id != 0, "Transfer not found");
+        require(tr.status == TransferStatus.Pending, "Transfer not pending");
+        require(tr.to == msg.sender, "Not recipient");
+
+        if (accept) {
+            tr.status = TransferStatus.Accepted;
+
+            Token storage t = _tokens[tr.tokenId];
+            address previous = t.currentHolder;
+            t.currentHolder = tr.to;
+
+            emit CustodyChanged(tr.tokenId, previous, tr.to, uint8(t.stage), block.timestamp);
+        } else {
+            tr.status = TransferStatus.Rejected;
+        }
+
+        emit TransferStatusChanged(transferId, tr.tokenId, tr.from, tr.status, block.timestamp);
+    }
+
+    /**
+     * @notice Obtiene la información de una transferencia por su ID.
+     */
+    function getTransfer(uint256 transferId)
+        external
+        view returns (Transfer memory) {
+            require(_transfers[transferId].id != 0, "Transfer not found");
+            return _transfers[transferId];
+    }
+
+    /**
+     * @notice Obtiene todas las transferencias realizadas.
+     * Se podrán filtrar por estado.
+     */
+    function getTransfers(TransferStatus statusFilter)
+        external
+        view
+        returns (Transfer[] memory list)
+    {
+        uint256 total = _transferCounter;
+        uint256 count = 0;
+
+        for (uint256 i = 1; i <= total; i++) {
+            if (statusFilter == TransferStatus.None || _transfers[i].status == statusFilter) {
+                count++;
+            }
+        }
+
+        list = new Transfer[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i <= total; i++) {
+            Transfer storage tr = _transfers[i];
+            if (
+                statusFilter == TransferStatus.None ||
+                tr.status == statusFilter
+            ) {
+                list[index] = tr;
+                index++;
+            }
+        }
+
+        return list;
     }
 }

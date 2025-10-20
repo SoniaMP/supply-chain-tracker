@@ -18,10 +18,8 @@ contract RecyclingTraceabilityTest is Test {
     address public fakeCitizen = address(0x99);
 
     function setUp() public {
-        // 1️⃣ Deploy del AccessManager
         access = new AccessManager(admin);
 
-        // 2️⃣ Solicitudes de roles
         vm.startPrank(citizen);
         access.requestRole(access.CITIZEN());
         vm.stopPrank();
@@ -38,7 +36,6 @@ contract RecyclingTraceabilityTest is Test {
         access.requestRole(access.REWARD_AUTHORITY());
         vm.stopPrank();
 
-        // 3️⃣ El admin aprueba todas
         vm.startPrank(admin);
         access.approveAccount(citizen);
         access.approveAccount(transporter);
@@ -46,11 +43,9 @@ contract RecyclingTraceabilityTest is Test {
         access.approveAccount(rewardAuthority);
         vm.stopPrank();
 
-        // 4️⃣ Deploy del contrato principal
         trace = new RecyclingTraceability(address(access));
     }
 
-    // --- 1️⃣ Creación de token ---
 
     function test_CitizenCanCreateToken() public {
         vm.startPrank(citizen);
@@ -100,7 +95,6 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-    // --- 2️⃣ Transporte ---
 
     function test_TransporterCanCollectTokenAndUpdatesCustody() public {
         vm.startPrank(citizen);
@@ -177,7 +171,6 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-    // --- 4️⃣ Recompensa ---
 
     function test_RewardAuthorityCanFinalize() public {
         vm.startPrank(citizen);
@@ -213,7 +206,6 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-    // --- 5️⃣ Seguridad ---
 
     function test_RevertIfAttackerTriesCollect() public {
         vm.startPrank(citizen);
@@ -226,7 +218,6 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-    // --- 6️⃣ Listado global de tokens ---
 
     function test_GetAllTokens_ReturnsAllCreated() public {
         vm.startPrank(citizen);
@@ -279,4 +270,120 @@ contract RecyclingTraceabilityTest is Test {
         assertEq(otherTokens.length, 1, "Fake citizen should have 1 token");
         assertEq(otherTokens[0].creator, fakeCitizen);
     }
+
+    function test_TransporterCanInitiateTransfer() public {
+        vm.startPrank(citizen);
+        trace.createToken("PET", 1000, '{"tipo":"PET"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        trace.transfer(processor, 1, 500);
+        vm.stopPrank();
+
+        RecyclingTraceability.Transfer memory tr = trace.getTransfer(1);
+
+        assertEq(tr.id, 1);
+        assertEq(tr.tokenId, 1);
+        assertEq(tr.from, transporter);
+        assertEq(tr.to, processor);
+        assertEq(tr.amount, 500);
+        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Pending));
+    }
+
+    function test_RevertIfTransferNotFromTransporter() public {
+        vm.startPrank(citizen);
+        trace.createToken("Aluminio", 500, '{"tipo":"metal"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(attacker);
+        vm.expectRevert("Access denied: inactive or missing role");
+        trace.transfer(processor, 1, 100);
+        vm.stopPrank();
+    }
+
+    function test_RevertIfTransferInvalidProcessor() public {
+        vm.startPrank(citizen);
+        trace.createToken("Carton", 500, '{"tipo":"carton"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        vm.expectRevert("Recipient must be Processor");
+        trace.transfer(attacker, 1, 100);
+        vm.stopPrank();
+    }
+
+    function test_ProcessorCanAcceptTransferAndCustodyChanges() public {
+        vm.startPrank(citizen);
+        trace.createToken("PET", 800, '{"tipo":"plastico"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        trace.transfer(processor, 1, 800);
+        vm.stopPrank();
+
+        vm.startPrank(processor);
+        trace.setTransferStatus(1, true); 
+        vm.stopPrank();
+
+        RecyclingTraceability.Transfer memory tr = trace.getTransfer(1);
+        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Accepted));
+
+        (, , address holder, , , , , , , ) = trace.getToken(1);
+        assertEq(holder, processor);
+    }
+
+    function test_ProcessorCanRejectTransfer() public {
+        vm.startPrank(citizen);
+        trace.createToken("Vidrio", 1000, '{"tipo":"vidrio"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        trace.transfer(processor, 1, 500);
+        vm.stopPrank();
+
+        vm.startPrank(processor);
+        trace.setTransferStatus(1, false); 
+        vm.stopPrank();
+
+        RecyclingTraceability.Transfer memory tr = trace.getTransfer(1);
+        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Rejected));
+    }
+
+    function test_RevertIfTransferAlreadyProcessed() public {
+        vm.startPrank(citizen);
+        trace.createToken("PET", 800, '{"tipo":"plastico"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        trace.transfer(processor, 1, 800);
+        vm.stopPrank();
+
+        vm.startPrank(processor);
+        trace.setTransferStatus(1, true);
+        vm.expectRevert("Transfer not pending");
+        trace.setTransferStatus(1, false);
+        vm.stopPrank();
+    }
+
+    function test_RevertIfNonProcessorSetsTransferStatus() public {
+        vm.startPrank(citizen);
+        trace.createToken("PET", 800, '{"tipo":"plastico"}', 0);
+        vm.stopPrank();
+
+        vm.startPrank(transporter);
+        trace.collectToken(1);
+        trace.transfer(processor, 1, 800);
+        vm.stopPrank();
+
+        vm.startPrank(attacker);
+        vm.expectRevert("Access denied: inactive or missing role");
+        trace.setTransferStatus(1, true);
+        vm.stopPrank();
+    }
+
 }
