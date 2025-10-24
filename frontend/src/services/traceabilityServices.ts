@@ -91,6 +91,23 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
+  async function transfer(
+    tokenId: number,
+    to: string,
+    amount: number
+  ): Promise<void> {
+    try {
+      const tx = await contract.transfer(to, tokenId, amount);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
   return {
     getTokensByUser,
     createToken,
@@ -98,5 +115,6 @@ export const traceabilityServices = (contract: any) => {
     collectToken,
     getAllTokens,
     getTransfers,
+    transfer,
   };
 };

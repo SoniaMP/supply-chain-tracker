@@ -48,6 +48,15 @@ export const useTraceability = () => {
     return service.collectToken(tokenId);
   }
 
+  function transfer(
+    tokenId: number,
+    to: string,
+    amount: number
+  ): Promise<void> {
+    if (!service) return Promise.resolve();
+    return service.transfer(tokenId, to, amount);
+  }
+
   function getTransfers(status?: TransferStatus): Promise<ITokenTransfer[]> {
     if (!service) return Promise.resolve([]);
     return service.getTransfers(status);
@@ -62,5 +71,6 @@ export const useTraceability = () => {
     collectToken,
     getAllTokens,
     getTransfers,
+    transfer,
   };
 };

@@ -6,8 +6,8 @@ import RejectedAccount from "@components/UserAccess/RejectedAccount";
 import { AccountStatus, UserRole } from "../../interfaces";
 import Admin from "./components/Admin";
 import { CardLayout } from "../../layouts";
-import Transporter from "./components/Transporter";
-import Citizen from "./components/Citizen";
+import Transporter from "../Transporter/Transporter";
+import Citizen from "../Citizen/Citizen";
 import Processor from "./components/Processor";
 import RewardAuthority from "./components/RewardAuthority";
 

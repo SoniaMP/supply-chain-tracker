@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Container } from "@mui/material";
 
 import { useTraceability } from "@hooks/useTraceability";
-import { INewTokenForm, ITokenInfo, UserRole } from "../../../interfaces";
-import LoadingOverlay from "../../../layout/LoadingOverlay";
-import CreateToken from "@components/Token/CreateToken";
+import { INewTokenForm, ITokenInfo, UserRole } from "../../interfaces";
+import LoadingOverlay from "../../layout/LoadingOverlay";
+import CreateToken from "@components/Citizen/CreateToken";
 import EmptyToken from "@components/Token/EmptyToken";
 import TokenList from "@components/Token/TokenList";
 import TokenHistory from "@components/Token/TokenHistory";

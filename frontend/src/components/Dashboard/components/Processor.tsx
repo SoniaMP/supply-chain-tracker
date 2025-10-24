@@ -1,11 +1,15 @@
 import {
-  Box,
   Button,
   Card,
   Chip,
   Container,
-  Grid,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
 import AcceptIcon from "@mui/icons-material/ThumbUpAltOutlined";
@@ -25,10 +29,15 @@ const Processor = () => {
   const { getTransfers, isServiceReady } = useTraceability();
 
   const refreshTokenTransfers = async () => {
-    setIsLoading(true);
-    const transfers = await getTransfers();
-    setTokenTransfers(transfers);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const transfers = await getTransfers();
+      setTokenTransfers(transfers);
+    } catch (err) {
+      console.error("Error loading transfers:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -36,62 +45,118 @@ const Processor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isServiceReady]);
 
-  function handleReject(transferId: number) {
-    // Implement rejection logic here
-    console.log("Rejecting transfer with ID:", transferId);
-  }
+  const handleReject = async (id: number) => {
+    console.log("Rejecting transfer:", id);
+    // TODO: await rejectTransfer(id)
+  };
 
-  function handleAccept(transferId: number) {
-    // Implement acceptance logic here
-    console.log("Accepting transfer with ID:", transferId);
-  }
+  const handleAccept = async (id: number) => {
+    console.log("Accepting transfer:", id);
+    // TODO: await acceptTransfer(id)
+  };
 
   return (
     <Container sx={{ py: 2 }} maxWidth="lg">
       <LoadingOverlay loading={isLoading} />
       <Stack spacing={3}>
         <Typography variant="h5">Historial de Transferencias</Typography>
-        {tokenTransfers.length === 0 && !isLoading && (
+
+        {tokenTransfers.length === 0 && !isLoading ? (
           <Card sx={{ p: 2 }}>
             <EmptySection message="No hay transferencias disponibles." />
           </Card>
-        )}
-        {tokenTransfers.length > 0 && (
-          <Grid container spacing={2}>
-            {tokenTransfers.map((transfer) => (
-              <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={transfer.id}>
-                <Card sx={{ p: 2 }}>
-                  <Stack spacing={1}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="subtitle1" sx={{ flex: 1 }}>
-                        Token #{transfer.tokenId}
-                      </Typography>
-                      <Chip label={mapTransferStatusToLabel[transfer.status]} />
-                    </Box>
-                    <AddressInfo label="Origen" address={transfer.from} />
-                    <AddressInfo label="Destino" address={transfer.to} />
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<RejectIcon />}
-                        onClick={() => handleReject(transfer.id)}
-                      >
-                        Rechazar
-                      </Button>
-                      <Button
-                        fullWidth
-                        startIcon={<AcceptIcon />}
-                        onClick={() => handleAccept(transfer.id)}
-                      >
-                        Aceptar
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+        ) : (
+          <TableContainer component={Card}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <strong>ID</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Token</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Origen</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Destino</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Cantidad</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Estado</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Acciones</strong>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tokenTransfers.map((transfer) => (
+                  <TableRow key={transfer.id}>
+                    <TableCell>#{transfer.id}</TableCell>
+                    <TableCell>Token #{transfer.tokenId}</TableCell>
+                    <TableCell>
+                      <AddressInfo address={transfer.from} />
+                    </TableCell>
+                    <TableCell>
+                      <AddressInfo address={transfer.to} />
+                    </TableCell>
+                    <TableCell align="center">{transfer.amount}</TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        size="small"
+                        color={
+                          transfer.status === 1
+                            ? "warning"
+                            : transfer.status === 2
+                            ? "success"
+                            : transfer.status === 3
+                            ? "error"
+                            : "default"
+                        }
+                        label={mapTransferStatusToLabel[transfer.status]}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      {transfer.status === 1 ? ( // Pending
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          justifyContent="center"
+                        >
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            startIcon={<RejectIcon />}
+                            onClick={() => handleReject(transfer.id)}
+                          >
+                            Rechazar
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AcceptIcon />}
+                            onClick={() => handleAccept(transfer.id)}
+                          >
+                            Aceptar
+                          </Button>
+                        </Stack>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          —
+                        </Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
       </Stack>
     </Container>

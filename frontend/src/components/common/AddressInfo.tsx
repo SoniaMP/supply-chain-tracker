@@ -5,13 +5,15 @@ const AddressInfo = ({
   label,
   address,
 }: {
-  label: string;
+  label?: string;
   address: string;
 }) => (
   <Stack direction="row" spacing={1} alignItems="center">
-    <Typography variant="body2" color="text.secondary">
-      {label}
-    </Typography>
+    {label && (
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+    )}
     <Chip variant="outlined" size="small" label={formatAddress(address)} />
   </Stack>
 );

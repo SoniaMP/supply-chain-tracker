@@ -11,10 +11,11 @@ import ArrowOutIcon from "@mui/icons-material/ArrowOutwardOutlined";
 import ArrowInIcon from "@mui/icons-material/SouthEastOutlined";
 
 import { useTraceability } from "@hooks/useTraceability";
-import LoadingOverlay from "../../../layout/LoadingOverlay";
-import { ITokenInfo, TokenStage } from "../../../interfaces";
+import LoadingOverlay from "../../layout/LoadingOverlay";
+import { ITokenInfo, TokenStage } from "../../interfaces";
 import EmptySection from "@components/common/EmptySection";
 import AddressInfo from "@components/common/AddressInfo";
+import TransferTokenForm from "./TransferTokenForm";
 
 const QuantityInfo = ({ amount }: { amount: number }) => (
   <Typography variant="body2" color="text.secondary">
@@ -72,8 +73,16 @@ const TokenSection: React.FC<TokenSectionProps> = ({
 const Transporter = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tokens, setTokens] = useState<ITokenInfo[]>([]);
+  const [tokenId, setTokenId] = useState<number | null>(null);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
 
-  const { collectToken, getAllTokens, isServiceReady } = useTraceability();
+  const { collectToken, transfer, getAllTokens, isServiceReady } =
+    useTraceability();
+
+  const createdTokens = tokens.filter((t) => t.stage === TokenStage.Created);
+  const collectedTokens = tokens.filter(
+    (t) => t.stage === TokenStage.Collected
+  );
 
   const refreshTokens = async () => {
     const all = await getAllTokens();
@@ -102,10 +111,25 @@ const Transporter = () => {
     }
   }
 
-  const createdTokens = tokens.filter((t) => t.stage === TokenStage.Created);
-  const collectedTokens = tokens.filter(
-    (t) => t.stage === TokenStage.Collected
-  );
+  function handleTransfer(tokenId: number) {
+    setTokenId(tokenId);
+    setShowTransferDialog(true);
+  }
+
+  async function handleAcceptTransfer(to: string, amount: number) {
+    if (tokenId === null || !transfer) return;
+
+    try {
+      setShowTransferDialog(false);
+      setIsLoading(true);
+      await transfer(tokenId, to, amount);
+      await refreshTokens();
+    } catch (err) {
+      console.error("Error transferring token:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <Container sx={{ py: 2 }} maxWidth="lg">
@@ -125,9 +149,16 @@ const Transporter = () => {
           actionLabel="Enviar"
           actionIcon={<ArrowOutIcon />}
           actionVariant="outlined"
-          onAction={(id) => alert(`Enviar token con ID: ${id}`)}
+          onAction={handleTransfer}
         />
       </Stack>
+      {showTransferDialog && (
+        <TransferTokenForm
+          open={showTransferDialog}
+          onClose={() => setShowTransferDialog(false)}
+          onSubmit={handleAcceptTransfer}
+        />
+      )}
     </Container>
   );
 };

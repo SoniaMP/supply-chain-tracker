@@ -29,6 +29,7 @@ import { useAccessManager } from "@hooks/useAccessManager";
 import { ROLE_NAMES } from "@utils/accessAdapters";
 import { formatAddress } from "@utils/helpers";
 import StageIcon from "./StageIcon";
+import LoadingOverlay from "../../layout/LoadingOverlay";
 
 const TokenHistory = ({
   token,
@@ -86,10 +87,9 @@ const TokenHistory = ({
     fetchRoles();
   }, [history, getAccountInfo]);
 
-  if (isLoading) return <p>Cargando historial...</p>;
-
   return (
     <Dialog open={true} fullWidth maxWidth="sm" onClose={onClose}>
+      <LoadingOverlay loading={isLoading} />
       <Paper sx={{ p: 2, borderRadius: 2 }} elevation={1}>
         <Typography variant="h6" component="h3" gutterBottom>
           Historial de Custodia

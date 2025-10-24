@@ -20,7 +20,7 @@ contract RecyclingTraceability {
         address currentHolder;
         string name;
         uint256 totalSupply;
-        string citizenFeatures; 
+        string citizenFeatures;
         string processorFeatures;
         uint256 parentId;
         uint256 dateCreated;
@@ -43,7 +43,11 @@ contract RecyclingTraceability {
     mapping(uint256 => Token) private _tokens;
     uint256[] private _allTokenIds;
 
-    event TokenCreated(uint256 indexed id, address indexed citizen, string name);
+    event TokenCreated(
+        uint256 indexed id,
+        address indexed citizen,
+        string name
+    );
     event TokenCollected(uint256 indexed id, address indexed transporter);
     event TokenProcessed(uint256 indexed id, address indexed processor);
     event TokenRewarded(uint256 indexed id, address indexed authority);
@@ -56,7 +60,7 @@ contract RecyclingTraceability {
         uint256 timestamp
     );
 
-    // --- Gestión de transferencias ----- 
+    // --- Gestión de transferencias -----
     enum TransferStatus {
         None,
         Pending,
@@ -93,8 +97,6 @@ contract RecyclingTraceability {
         TransferStatus status,
         uint256 timestamp
     );
-
-    // --------
 
     modifier onlyRoleActive(bytes32 role) {
         require(
@@ -138,13 +140,18 @@ contract RecyclingTraceability {
         _allTokenIds.push(newId);
 
         emit TokenCreated(newId, msg.sender, name);
-        emit CustodyChanged(newId, address(0), msg.sender, uint8(Stage.Created), block.timestamp);
+        emit CustodyChanged(
+            newId,
+            address(0),
+            msg.sender,
+            uint8(Stage.Created),
+            block.timestamp
+        );
     }
 
-    function collectToken(uint256 tokenId)
-        external
-        onlyRoleActive(accessManager.TRANSPORTER())
-    {
+    function collectToken(
+        uint256 tokenId
+    ) external onlyRoleActive(accessManager.TRANSPORTER()) {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
         require(t.stage == Stage.Created, "Already collected or beyond");
@@ -154,13 +161,19 @@ contract RecyclingTraceability {
         t.currentHolder = msg.sender;
 
         emit TokenCollected(tokenId, msg.sender);
-        emit CustodyChanged(tokenId, previous, msg.sender, uint8(Stage.Collected), block.timestamp);
+        emit CustodyChanged(
+            tokenId,
+            previous,
+            msg.sender,
+            uint8(Stage.Collected),
+            block.timestamp
+        );
     }
 
-    function processToken(uint256 tokenId, string memory processorFeatures)
-        external
-        onlyRoleActive(accessManager.PROCESSOR())
-    {
+    function processToken(
+        uint256 tokenId,
+        string memory processorFeatures
+    ) external onlyRoleActive(accessManager.PROCESSOR()) {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
         require(t.stage == Stage.Collected, "Not collected yet");
@@ -171,13 +184,18 @@ contract RecyclingTraceability {
         t.currentHolder = msg.sender;
 
         emit TokenProcessed(tokenId, msg.sender);
-        emit CustodyChanged(tokenId, previous, msg.sender, uint8(Stage.Processed), block.timestamp);
+        emit CustodyChanged(
+            tokenId,
+            previous,
+            msg.sender,
+            uint8(Stage.Processed),
+            block.timestamp
+        );
     }
 
-    function rewardToken(uint256 tokenId)
-        external
-        onlyRoleActive(accessManager.REWARD_AUTHORITY())
-    {
+    function rewardToken(
+        uint256 tokenId
+    ) external onlyRoleActive(accessManager.REWARD_AUTHORITY()) {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
         require(t.stage == Stage.Processed, "Not processed yet");
@@ -185,10 +203,18 @@ contract RecyclingTraceability {
         t.stage = Stage.Rewarded;
 
         emit TokenRewarded(tokenId, msg.sender);
-        emit CustodyChanged(tokenId, t.currentHolder, msg.sender, uint8(Stage.Rewarded), block.timestamp);
+        emit CustodyChanged(
+            tokenId,
+            t.currentHolder,
+            msg.sender,
+            uint8(Stage.Rewarded),
+            block.timestamp
+        );
     }
 
-    function getToken(uint256 tokenId)
+    function getToken(
+        uint256 tokenId
+    )
         external
         view
         returns (
@@ -241,11 +267,9 @@ contract RecyclingTraceability {
         }
     }
 
-    function getTokensByUser(address user)
-        external
-        view
-        returns (TokenView[] memory list)
-    {
+    function getTokensByUser(
+        address user
+    ) external view returns (TokenView[] memory list) {
         uint256 total = _allTokenIds.length;
         uint256 count = 0;
 
@@ -278,15 +302,22 @@ contract RecyclingTraceability {
     }
 
     /**
-    * @notice Inicia la transferencia de un tocken a un centro de procesamiento.
-    * Solo puede ejecutarlo un TRANSPORTER activo.
-    */
-    function transfer(address to, uint256 tokenId, uint256 amount) external onlyRoleActive(accessManager.TRANSPORTER()) {
+     * @notice Inicia la transferencia de un tocken a un centro de procesamiento.
+     * Solo puede ejecutarlo un TRANSPORTER activo.
+     */
+    function transfer(
+        address to,
+        uint256 tokenId,
+        uint256 amount
+    ) external onlyRoleActive(accessManager.TRANSPORTER()) {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
         require(t.stage == Stage.Collected, "Token not collected yet");
         require(t.currentHolder == msg.sender, "Not current holder");
-        require(accessManager.hasActiveRole(to, accessManager.PROCESSOR()), "Recipient must be Processor");
+        require(
+            accessManager.hasActiveRole(to, accessManager.PROCESSOR()),
+            "Recipient must be Processor"
+        );
         require(amount > 0 && amount <= t.totalSupply, "Invalid amount");
 
         _transferCounter++;
@@ -302,14 +333,24 @@ contract RecyclingTraceability {
             timestamp: block.timestamp
         });
 
-        emit TransferInitiated(newTransferId, tokenId, msg.sender, to, amount, block.timestamp);
+        emit TransferInitiated(
+            newTransferId,
+            tokenId,
+            msg.sender,
+            to,
+            amount,
+            block.timestamp
+        );
     }
 
     /**
      * @notice Acepta o rechaza una transferencia pendiente.
-     * Solo puede ejecutarlo el PROCESSOR activo. 
+     * Solo puede ejecutarlo el PROCESSOR activo.
      */
-    function setTransferStatus(uint256 transferId, bool accept) external onlyRoleActive(accessManager.PROCESSOR()) {
+    function setTransferStatus(
+        uint256 transferId,
+        bool accept
+    ) external onlyRoleActive(accessManager.PROCESSOR()) {
         Transfer storage tr = _transfers[transferId];
         require(tr.id != 0, "Transfer not found");
         require(tr.status == TransferStatus.Pending, "Transfer not pending");
@@ -322,38 +363,51 @@ contract RecyclingTraceability {
             address previous = t.currentHolder;
             t.currentHolder = tr.to;
 
-            emit CustodyChanged(tr.tokenId, previous, tr.to, uint8(t.stage), block.timestamp);
+            emit CustodyChanged(
+                tr.tokenId,
+                previous,
+                tr.to,
+                uint8(t.stage),
+                block.timestamp
+            );
         } else {
             tr.status = TransferStatus.Rejected;
         }
 
-        emit TransferStatusChanged(transferId, tr.tokenId, tr.from, tr.status, block.timestamp);
+        emit TransferStatusChanged(
+            transferId,
+            tr.tokenId,
+            tr.from,
+            tr.status,
+            block.timestamp
+        );
     }
 
     /**
      * @notice Obtiene la información de una transferencia por su ID.
      */
-    function getTransfer(uint256 transferId)
-        external
-        view returns (Transfer memory) {
-            require(_transfers[transferId].id != 0, "Transfer not found");
-            return _transfers[transferId];
+    function getTransfer(
+        uint256 transferId
+    ) external view returns (Transfer memory) {
+        require(_transfers[transferId].id != 0, "Transfer not found");
+        return _transfers[transferId];
     }
 
     /**
      * @notice Obtiene todas las transferencias realizadas.
      * Se podrán filtrar por estado.
      */
-    function getTransfers(TransferStatus statusFilter)
-        external
-        view
-        returns (Transfer[] memory list)
-    {
+    function getTransfers(
+        TransferStatus statusFilter
+    ) external view returns (Transfer[] memory list) {
         uint256 total = _transferCounter;
         uint256 count = 0;
 
         for (uint256 i = 1; i <= total; i++) {
-            if (statusFilter == TransferStatus.None || _transfers[i].status == statusFilter) {
+            if (
+                statusFilter == TransferStatus.None ||
+                _transfers[i].status == statusFilter
+            ) {
                 count++;
             }
         }
@@ -364,8 +418,7 @@ contract RecyclingTraceability {
         for (uint256 i = 1; i <= total; i++) {
             Transfer storage tr = _transfers[i];
             if (
-                statusFilter == TransferStatus.None ||
-                tr.status == statusFilter
+                statusFilter == TransferStatus.None || tr.status == statusFilter
             ) {
                 list[index] = tr;
                 index++;
