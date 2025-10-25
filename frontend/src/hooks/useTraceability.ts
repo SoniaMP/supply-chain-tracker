@@ -62,6 +62,21 @@ export const useTraceability = () => {
     return service.getTransfers(status);
   }
 
+  function acceptTransfer(transferId: number) {
+    if (!service) return Promise.resolve();
+    return service.acceptTransfer(transferId);
+  }
+
+  function rejectTransfer(transferId: number) {
+    if (!service) return Promise.resolve();
+    return service.rejectTransfer(transferId);
+  }
+
+  function processToken(tokenId: number, features: string) {
+    if (!service) return Promise.resolve();
+    return service.processToken(tokenId, features);
+  }
+
   return {
     isServiceReady,
     service,
@@ -72,5 +87,8 @@ export const useTraceability = () => {
     getAllTokens,
     getTransfers,
     transfer,
+    acceptTransfer,
+    rejectTransfer,
+    processToken,
   };
 };

@@ -6,9 +6,9 @@ import RejectedAccount from "@components/UserAccess/RejectedAccount";
 import { AccountStatus, UserRole } from "../../interfaces";
 import Admin from "./components/Admin";
 import { CardLayout } from "../../layouts";
-import Transporter from "../Transporter/Transporter";
-import Citizen from "../Citizen/Citizen";
-import Processor from "./components/Processor";
+import Transporter from "../Transporter";
+import Citizen from "../Citizen";
+import Processor from "../Processor";
 import RewardAuthority from "./components/RewardAuthority";
 
 const mappingRolesToComponents: { [key in UserRole]: React.FC } = {

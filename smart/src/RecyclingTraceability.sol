@@ -302,22 +302,16 @@ contract RecyclingTraceability {
     }
 
     /**
-     * @notice Inicia la transferencia de un tocken a un centro de procesamiento.
-     * Solo puede ejecutarlo un TRANSPORTER activo.
+     * @notice Inicia la transferencia de un token hacia otro usuario.
      */
     function transfer(
         address to,
         uint256 tokenId,
         uint256 amount
-    ) external onlyRoleActive(accessManager.TRANSPORTER()) {
+    ) external  {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
-        require(t.stage == Stage.Collected, "Token not collected yet");
         require(t.currentHolder == msg.sender, "Not current holder");
-        require(
-            accessManager.hasActiveRole(to, accessManager.PROCESSOR()),
-            "Recipient must be Processor"
-        );
         require(amount > 0 && amount <= t.totalSupply, "Invalid amount");
 
         _transferCounter++;

@@ -10,23 +10,28 @@ import { useState } from "react";
 
 interface TransferTokenFormProps {
   open: boolean;
+  enableFeatures?: boolean;
   onClose: () => void;
-  onSubmit: (address: string, amount: number) => void;
+  onSubmit: (address: string, amount: number, features: string) => void;
 }
 
 const TransferTokenForm = ({
   open,
+  enableFeatures = false,
   onClose,
   onSubmit,
 }: TransferTokenFormProps) => {
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
-  const [errors, setErrors] = useState<{ address?: string; amount?: string }>(
-    {}
-  );
+  const [features, setFeatures] = useState("");
+  const [errors, setErrors] = useState<{
+    address?: string;
+    amount?: string;
+    features?: string;
+  }>({});
 
   const validate = () => {
-    const next: { address?: string; amount?: string } = {};
+    const next: { address?: string; amount?: string; features?: string } = {};
     const addr = address.trim();
     const amt = Number(amount);
 
@@ -38,6 +43,11 @@ const TransferTokenForm = ({
     else if (Number.isNaN(amt) || amt <= 0)
       next.amount = "Introduce una cantidad mayor que 0";
 
+    if (enableFeatures) {
+      const feat = features.trim();
+      if (!feat) next.features = "Las características son obligatorias";
+    }
+
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -46,7 +56,7 @@ const TransferTokenForm = ({
     e.preventDefault();
     if (!validate()) return;
 
-    onSubmit(address, Number(amount));
+    onSubmit(address, Number(amount), features);
   };
 
   return (
@@ -75,6 +85,17 @@ const TransferTokenForm = ({
             onChange={(e) => setAmount(e.target.value)}
             error={Boolean(errors.amount)}
             helperText={errors.amount}
+          />
+          <TextField
+            rows={4}
+            label="Características"
+            fullWidth
+            margin="normal"
+            value={features}
+            onChange={(e) => setFeatures(e.target.value)}
+            error={Boolean(errors.features)}
+            helperText={errors.features}
+            multiline
           />
         </DialogContent>
 

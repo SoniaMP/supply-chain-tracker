@@ -108,6 +108,48 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
+  async function acceptTransfer(transferId: number): Promise<void> {
+    try {
+      const tx = await contract.setTransferStatus(transferId, true);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
+  async function rejectTransfer(transferId: number): Promise<void> {
+    try {
+      const tx = await contract.setTransferStatus(transferId, false);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
+  async function processToken(
+    tokenId: number,
+    features: string
+  ): Promise<void> {
+    try {
+      const tx = await contract.processToken(tokenId, features);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
   return {
     getTokensByUser,
     createToken,
@@ -116,5 +158,8 @@ export const traceabilityServices = (contract: any) => {
     getAllTokens,
     getTransfers,
     transfer,
+    acceptTransfer,
+    rejectTransfer,
+    processToken,
   };
 };

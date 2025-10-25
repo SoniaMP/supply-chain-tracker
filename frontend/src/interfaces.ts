@@ -74,6 +74,7 @@ export interface IAccountInfo {
 export interface ITokenInfo {
   id: number;
   creator: string;
+  currentHolder: string;
   name: string;
   totalSupply: number;
   citizenFeatures: string;

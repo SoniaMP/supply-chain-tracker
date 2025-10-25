@@ -14,25 +14,43 @@ import {
 } from "@mui/material";
 import AcceptIcon from "@mui/icons-material/ThumbUpAltOutlined";
 import RejectIcon from "@mui/icons-material/ThumbDownAltOutlined";
+import PropaneIcon from "@mui/icons-material/PropaneTankOutlined";
 import { useEffect, useState } from "react";
 
-import LoadingOverlay from "../../../layout/LoadingOverlay";
+import LoadingOverlay from "../../layout/LoadingOverlay";
 import { useTraceability } from "@hooks/useTraceability";
 import EmptySection from "@components/common/EmptySection";
 import AddressInfo from "@components/common/AddressInfo";
-import { ITokenTransfer, mapTransferStatusToLabel } from "../../../interfaces";
+import { ITokenTransfer, mapTransferStatusToLabel } from "../../interfaces";
+import { useWallet } from "@context/metamask/provider";
+import TransferTokenForm from "@components/Token/TransferTokenForm";
 
 const Processor = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [tokenId, setTokenId] = useState<number | null>(null);
+  const [isProcessTokenFormOpen, setProcessTokenFormOpen] = useState(false);
   const [tokenTransfers, setTokenTransfers] = useState<ITokenTransfer[]>([]);
+  const { account } = useWallet();
 
-  const { getTransfers, isServiceReady } = useTraceability();
+  console.log("Token Transfers:", tokenTransfers);
+
+  const {
+    acceptTransfer,
+    rejectTransfer,
+    getTransfers,
+    processToken,
+    transfer,
+    isServiceReady,
+  } = useTraceability();
 
   const refreshTokenTransfers = async () => {
     try {
       setIsLoading(true);
       const transfers = await getTransfers();
-      setTokenTransfers(transfers);
+      const myTransfers = transfers.filter(
+        (t) => t.to.toLowerCase() === account?.toLowerCase()
+      );
+      setTokenTransfers(myTransfers);
     } catch (err) {
       console.error("Error loading transfers:", err);
     } finally {
@@ -45,15 +63,57 @@ const Processor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isServiceReady]);
 
-  const handleReject = async (id: number) => {
-    console.log("Rejecting transfer:", id);
-    // TODO: await rejectTransfer(id)
+  const handleReject = async (tokenId: number) => {
+    if (!rejectTransfer) return;
+
+    try {
+      setIsLoading(true);
+      await rejectTransfer(tokenId);
+      await refreshTokenTransfers();
+    } catch (err) {
+      console.error("Error rejecting transfer:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAccept = async (id: number) => {
-    console.log("Accepting transfer:", id);
-    // TODO: await acceptTransfer(id)
+  const handleAccept = async (tokenId: number) => {
+    if (!acceptTransfer) return;
+
+    try {
+      setIsLoading(true);
+      await acceptTransfer(tokenId);
+      await refreshTokenTransfers();
+    } catch (err) {
+      console.error("Error accepting transfer:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleProcess = async (
+    to: string,
+    amount: number,
+    features: string
+  ) => {
+    if (!transfer || !processToken || tokenId === null) return;
+
+    try {
+      setIsLoading(true);
+      await processToken(tokenId, features);
+      await transfer(tokenId, to, amount);
+      await refreshTokenTransfers();
+    } catch (err) {
+      console.error("Error processing token:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  function handleShowProcessTokenForm(tokenId: number) {
+    setTokenId(tokenId);
+    setProcessTokenFormOpen(true);
+  }
 
   return (
     <Container sx={{ py: 2 }} maxWidth="lg">
@@ -121,7 +181,7 @@ const Processor = () => {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      {transfer.status === 1 ? ( // Pending
+                      {transfer.status === 1 && (
                         <Stack
                           direction="row"
                           spacing={1}
@@ -146,10 +206,19 @@ const Processor = () => {
                             Aceptar
                           </Button>
                         </Stack>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          —
-                        </Typography>
+                      )}
+                      {transfer.status === 2 && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<PropaneIcon />}
+                          onClick={() =>
+                            handleShowProcessTokenForm(transfer.id)
+                          }
+                        >
+                          Procesar
+                        </Button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -159,6 +228,12 @@ const Processor = () => {
           </TableContainer>
         )}
       </Stack>
+      <TransferTokenForm
+        enableFeatures
+        open={isProcessTokenFormOpen}
+        onClose={() => setProcessTokenFormOpen(false)}
+        onSubmit={handleProcess}
+      />
     </Container>
   );
 };

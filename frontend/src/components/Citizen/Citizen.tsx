@@ -40,7 +40,6 @@ const Citizen = () => {
     if (!newToken || !createToken) return;
     try {
       setIsLoading(true);
-      console.log("Creating token from Citizen component...", newToken);
       await createToken(newToken.name, newToken.total, newToken.additionalInfo);
       const tokens = await getTokensByUser();
       setTokens(tokens);
