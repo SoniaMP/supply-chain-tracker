@@ -1,8 +1,6 @@
-import BlockIcon from "@mui/icons-material/BlockOutlined";
-import DoneIcon from "@mui/icons-material/DoneOutlined";
-import MoreIcon from "@mui/icons-material/MoreVertOutlined";
-import { IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { Button, Stack } from "@mui/material";
+import AcceptIcon from "@mui/icons-material/ThumbUpAltOutlined";
+import RejectIcon from "@mui/icons-material/ThumbDownAltOutlined";
 
 interface UserActionsProps {
   onApprove: () => void;
@@ -10,50 +8,27 @@ interface UserActionsProps {
 }
 
 const UserActions = ({ onApprove, onReject }: UserActionsProps) => {
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => setAnchorEl(null);
-
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
-
   return (
-    <>
-      <IconButton
-        sx={{ marginLeft: "auto" }}
-        onClick={handleClick}
-        aria-describedby={id}
+    <Stack direction="row" spacing={1}>
+      <Button
+        size="small"
+        variant="outlined"
+        color="error"
+        startIcon={<RejectIcon />}
+        onClick={onReject}
       >
-        <MoreIcon />
-      </IconButton>
-      <Menu
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
+        Rechazar
+      </Button>
+      <Button
+        size="small"
+        variant="contained"
+        color="success"
+        startIcon={<AcceptIcon />}
+        onClick={onApprove}
       >
-        <MenuItem onClick={onApprove}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <DoneIcon fontSize="small" />
-            <Typography>Aprobar</Typography>
-          </Stack>
-        </MenuItem>
-        <MenuItem onClick={onReject}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <BlockIcon fontSize="small" />
-            <Typography>Rechazar</Typography>
-          </Stack>
-        </MenuItem>
-      </Menu>
-    </>
+        Aprobar
+      </Button>
+    </Stack>
   );
 };
 

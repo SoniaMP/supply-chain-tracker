@@ -1,9 +1,15 @@
 import {
+  getUiCollectedTokens,
   getUiTokenHistoryEntry,
   getUiTokenInfo,
   getUiTokenTransfer,
 } from "@utils/tokenAdapters";
-import { ITokenHistoryEntry, ITokenInfo, TransferStatus } from "../interfaces";
+import {
+  ICollectedToken,
+  ITokenHistoryEntry,
+  ITokenInfo,
+  TransferStatus,
+} from "../interfaces";
 
 export const traceabilityServices = (contract: any) => {
   if (!contract) {
@@ -150,16 +156,66 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
+  async function rewardToken(tokenId: number, amount: number): Promise<void> {
+    try {
+      const tx = await contract.rewardToken(tokenId, amount);
+      const receipt = await tx.wait();
+
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed (status 0)");
+      }
+    } catch (err: any) {
+      throw new Error(err?.reason || err?.message || "Transaction reverted");
+    }
+  }
+
+  async function getCollectedTokens(): Promise<ITokenInfo[]> {
+    try {
+      const filter = contract.filters.TokenCollected();
+      const events = await contract.queryFilter(filter, 0, "latest");
+      const allTokens = await getAllTokens();
+      const collected = events.map(
+        ({ args }: { args: ICollectedToken }) => getUiCollectedTokens([args])[0]
+      );
+      const filteredTokens = allTokens.filter((token: ITokenInfo) =>
+        collected.some(
+          (collectedToken: ICollectedToken) => collectedToken.id === token.id
+        )
+      );
+      return filteredTokens;
+    } catch (err) {
+      console.error("Error getting collected tokens by user:", err);
+      return [];
+    }
+  }
+
+  async function getRewardedTokens(): Promise<ITokenInfo[]> {
+    try {
+      const filter = contract.filters.TokenRewarded();
+      const events = await contract.queryFilter(filter, 0, "latest");
+      // const filteredTokens
+      return events.map(
+        ({ args }: { args: ITokenInfo }) => getUiCollectedTokens([args])[0]
+      );
+    } catch (err) {
+      console.error("Error getting rewarded tokens by user:", err);
+      return [];
+    }
+  }
+
   return {
-    getTokensByUser,
-    createToken,
-    getTokenHistory,
-    collectToken,
-    getAllTokens,
-    getTransfers,
-    transfer,
     acceptTransfer,
-    rejectTransfer,
+    collectToken,
+    createToken,
+    getAllTokens,
+    getCollectedTokens,
+    getRewardedTokens,
+    getTokenHistory,
+    getTokensByUser,
+    getTransfers,
     processToken,
+    rejectTransfer,
+    rewardToken,
+    transfer,
   };
 };

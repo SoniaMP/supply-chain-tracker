@@ -9,7 +9,7 @@ import { CardLayout } from "../../layouts";
 import Transporter from "../Transporter";
 import Citizen from "../Citizen";
 import Processor from "../Processor";
-import RewardAuthority from "./components/RewardAuthority";
+import RewardAuthority from "../RewardAuthority/RewardAuthority";
 
 const mappingRolesToComponents: { [key in UserRole]: React.FC } = {
   [UserRole.ADMIN]: Admin,

@@ -39,7 +39,7 @@ export const mapRoleToLabel: Record<string, string> = {
   CITIZEN: "Ciudadano",
   TRANSPORTER: "Transportista",
   PROCESSOR: "Procesador",
-  REWARD_AUTHORITY: "Autoridad de Recompensas",
+  REWARD_AUTHORITY: "Autoridad Reguladora",
 };
 
 export const mapTransferStatusToLabel: Record<TransferStatus, string> = {
@@ -81,6 +81,11 @@ export interface ITokenInfo {
   processorFeatures: string;
   dateCreated: number;
   stage: TokenStage;
+}
+
+export interface ICollectedToken {
+  id: number;
+  address: string;
 }
 
 export interface INewTokenForm {

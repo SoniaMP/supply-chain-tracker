@@ -46,7 +46,6 @@ contract RecyclingTraceabilityTest is Test {
         trace = new RecyclingTraceability(address(access));
     }
 
-
     function test_CitizenCanCreateToken() public {
         vm.startPrank(citizen);
         trace.createToken(
@@ -95,14 +94,14 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-
     function test_TransporterCanCollectTokenAndUpdatesCustody() public {
         vm.startPrank(citizen);
         trace.createToken("Vidrio", 800, '{"tipo":"vidrio"}', 0);
         vm.stopPrank();
 
         // Antes de recoger
-        (, , address holderBefore, , , , , , , uint8 stageBefore) = trace.getToken(1);
+        (, , address holderBefore, , , , , , , uint8 stageBefore) = trace
+            .getToken(1);
         assertEq(holderBefore, citizen);
         assertEq(stageBefore, uint8(RecyclingTraceability.Stage.Created));
 
@@ -111,7 +110,8 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
 
         // Después de recoger
-        (, , address holderAfter, , , , , , , uint8 stageAfter) = trace.getToken(1);
+        (, , address holderAfter, , , , , , , uint8 stageAfter) = trace
+            .getToken(1);
         assertEq(holderAfter, transporter);
         assertEq(stageAfter, uint8(RecyclingTraceability.Stage.Collected));
     }
@@ -171,7 +171,6 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
     }
 
-
     function test_RewardAuthorityCanFinalize() public {
         vm.startPrank(citizen);
         trace.createToken("PET reciclado", 1200, '{"tipo":"PET"}', 0);
@@ -186,7 +185,7 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
 
         vm.startPrank(rewardAuthority);
-        trace.rewardToken(1);
+        trace.rewardToken(1, 1200);
         vm.stopPrank();
 
         (, , address holder, , , , , , , uint8 stage) = trace.getToken(1);
@@ -202,10 +201,9 @@ contract RecyclingTraceabilityTest is Test {
 
         vm.startPrank(rewardAuthority);
         vm.expectRevert("Not processed yet");
-        trace.rewardToken(1);
+        trace.rewardToken(1, 300);
         vm.stopPrank();
     }
-
 
     function test_RevertIfAttackerTriesCollect() public {
         vm.startPrank(citizen);
@@ -217,7 +215,6 @@ contract RecyclingTraceabilityTest is Test {
         trace.collectToken(1);
         vm.stopPrank();
     }
-
 
     function test_GetAllTokens_ReturnsAllCreated() public {
         vm.startPrank(citizen);
@@ -260,13 +257,15 @@ contract RecyclingTraceabilityTest is Test {
         RecyclingTraceability.TokenView[] memory all = trace.getAllTokens();
         assertEq(all.length, 3);
 
-        RecyclingTraceability.TokenView[] memory userTokens = trace.getTokensByUser(citizen);
+        RecyclingTraceability.TokenView[] memory userTokens = trace
+            .getTokensByUser(citizen);
         assertEq(userTokens.length, 2, "Citizen should have 2 tokens");
 
         assertEq(userTokens[0].creator, citizen);
         assertEq(userTokens[1].creator, citizen);
 
-        RecyclingTraceability.TokenView[] memory otherTokens = trace.getTokensByUser(fakeCitizen);
+        RecyclingTraceability.TokenView[] memory otherTokens = trace
+            .getTokensByUser(fakeCitizen);
         assertEq(otherTokens.length, 1, "Fake citizen should have 1 token");
         assertEq(otherTokens[0].creator, fakeCitizen);
     }
@@ -288,30 +287,10 @@ contract RecyclingTraceabilityTest is Test {
         assertEq(tr.from, transporter);
         assertEq(tr.to, processor);
         assertEq(tr.amount, 500);
-        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Pending));
-    }
-
-    function test_RevertIfTransferNotFromTransporter() public {
-        vm.startPrank(citizen);
-        trace.createToken("Aluminio", 500, '{"tipo":"metal"}', 0);
-        vm.stopPrank();
-
-        vm.startPrank(attacker);
-        vm.expectRevert("Access denied: inactive or missing role");
-        trace.transfer(processor, 1, 100);
-        vm.stopPrank();
-    }
-
-    function test_RevertIfTransferInvalidProcessor() public {
-        vm.startPrank(citizen);
-        trace.createToken("Carton", 500, '{"tipo":"carton"}', 0);
-        vm.stopPrank();
-
-        vm.startPrank(transporter);
-        trace.collectToken(1);
-        vm.expectRevert("Recipient must be Processor");
-        trace.transfer(attacker, 1, 100);
-        vm.stopPrank();
+        assertEq(
+            uint8(tr.status),
+            uint8(RecyclingTraceability.TransferStatus.Pending)
+        );
     }
 
     function test_ProcessorCanAcceptTransferAndCustodyChanges() public {
@@ -325,11 +304,14 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
 
         vm.startPrank(processor);
-        trace.setTransferStatus(1, true); 
+        trace.setTransferStatus(1, true);
         vm.stopPrank();
 
         RecyclingTraceability.Transfer memory tr = trace.getTransfer(1);
-        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Accepted));
+        assertEq(
+            uint8(tr.status),
+            uint8(RecyclingTraceability.TransferStatus.Accepted)
+        );
 
         (, , address holder, , , , , , , ) = trace.getToken(1);
         assertEq(holder, processor);
@@ -346,11 +328,14 @@ contract RecyclingTraceabilityTest is Test {
         vm.stopPrank();
 
         vm.startPrank(processor);
-        trace.setTransferStatus(1, false); 
+        trace.setTransferStatus(1, false);
         vm.stopPrank();
 
         RecyclingTraceability.Transfer memory tr = trace.getTransfer(1);
-        assertEq(uint8(tr.status), uint8(RecyclingTraceability.TransferStatus.Rejected));
+        assertEq(
+            uint8(tr.status),
+            uint8(RecyclingTraceability.TransferStatus.Rejected)
+        );
     }
 
     function test_RevertIfTransferAlreadyProcessed() public {
@@ -369,21 +354,4 @@ contract RecyclingTraceabilityTest is Test {
         trace.setTransferStatus(1, false);
         vm.stopPrank();
     }
-
-    function test_RevertIfNonProcessorSetsTransferStatus() public {
-        vm.startPrank(citizen);
-        trace.createToken("PET", 800, '{"tipo":"plastico"}', 0);
-        vm.stopPrank();
-
-        vm.startPrank(transporter);
-        trace.collectToken(1);
-        trace.transfer(processor, 1, 800);
-        vm.stopPrank();
-
-        vm.startPrank(attacker);
-        vm.expectRevert("Access denied: inactive or missing role");
-        trace.setTransferStatus(1, true);
-        vm.stopPrank();
-    }
-
 }

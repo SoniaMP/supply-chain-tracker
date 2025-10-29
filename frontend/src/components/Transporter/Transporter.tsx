@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   Button,
+  Card,
+  CardContent,
+  CardHeader,
   Container,
   Grid,
   Paper,
@@ -13,58 +16,86 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import ArrowOutIcon from "@mui/icons-material/ArrowOutwardOutlined";
 import ArrowInIcon from "@mui/icons-material/SouthEastOutlined";
 
 import { useTraceability } from "@hooks/useTraceability";
-import LoadingOverlay from "../../layout/LoadingOverlay";
-import { ITokenInfo, ITokenTransfer, TokenStage } from "../../interfaces";
 import EmptySection from "@components/common/EmptySection";
 import AddressInfo from "@components/common/AddressInfo";
-import TransferTokenForm from "../Token/TransferTokenForm";
 import { useWallet } from "@context/metamask/provider";
-
-const QuantityInfo = ({ amount }: { amount: number }) => (
-  <Typography variant="body2" color="text.secondary">
-    Cantidad: {amount} gr.
-  </Typography>
-);
+import QuantityInfo from "@components/common/QuantityInfo";
+import LoadingOverlay from "../../layout/LoadingOverlay";
+import {
+  ITokenInfo,
+  ITokenTransfer,
+  mapTokenStageToLabel,
+  TokenStage,
+  TransferStatus,
+} from "../../interfaces";
+import TransferTokenForm from "../Token/TransferTokenForm";
+import TokensTable from "@components/Token/TokensTable";
+import Summary from "./Summary";
 
 const Transporter = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [tokens, setTokens] = useState<ITokenInfo[]>([]);
   const [tokenId, setTokenId] = useState<number | null>(null);
   const [transfers, setTransfers] = useState<ITokenTransfer[]>([]);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
-
-  const pendingTokenIds = new Set(transfers.map((tr) => tr.tokenId));
+  const [pendingTokens, setPendingTokens] = useState<ITokenInfo[]>([]);
+  const [collectedTokens, setCollectedTokens] = useState<ITokenInfo[]>([]);
+  const [ownedTokens, setOwnedTokens] = useState<ITokenInfo[]>([]);
 
   const { account } = useWallet();
-  const { collectToken, transfer, getAllTokens, getTransfers, isServiceReady } =
-    useTraceability();
-
-  const refreshTokens = async () => {
-    const all = await getAllTokens();
-    const allTokens = all.filter(
-      (t: ITokenInfo) =>
-        t.currentHolder.toLowerCase() === account?.toLowerCase() &&
-        (t.stage === TokenStage.Created || t.stage === TokenStage.Collected)
-    );
-    setTokens(allTokens);
-  };
-
-  const refreshTransfers = async () => {
-    const transfers = await getTransfers();
-    const myTransfers = transfers.filter(
-      (t: ITokenTransfer) =>
-        (t.from === account || t.to === account) && t.status === 1
-    );
-    setTransfers(myTransfers);
-  };
+  const {
+    collectToken,
+    transfer,
+    getAllTokens,
+    getCollectedTokens,
+    getTransfers,
+    isServiceReady,
+  } = useTraceability();
 
   const refresh = async () => {
-    await refreshTokens();
-    await refreshTransfers();
+    setIsLoading(true);
+
+    const [allTokens, allTransfers, collectedTokens] = await Promise.all([
+      getAllTokens(),
+      getTransfers(),
+      getCollectedTokens(),
+    ]);
+
+    // Transfers activas (pendientes) creadas por el transportista
+    const transporterTransfers = allTransfers.filter(
+      (tr: any) =>
+        tr.from.toLowerCase() === account?.toLowerCase() &&
+        tr.status === TransferStatus.Pending
+    );
+
+    const activeTransferTokenIds = transporterTransfers.map(
+      (tr: any) => tr.tokenId
+    );
+
+    // Filtramos los tokens en posesión que NO estén en una transferencia activa
+    const availableTokens = allTokens.filter(
+      (t: any) =>
+        t.currentHolder.toLowerCase() === account?.toLowerCase() &&
+        !activeTransferTokenIds.includes(t.id)
+    );
+
+    // Tokens que posee actualmente el transportista
+    const ownedTokens = availableTokens.filter(
+      (t: any) => t.currentHolder.toLowerCase() === account?.toLowerCase()
+    );
+
+    const pendingTokens = allTokens.filter(
+      (t: ITokenInfo) => t.stage === TokenStage.Created
+    );
+
+    console.log("Collected tokens for transporter:", collectedTokens);
+    setPendingTokens(pendingTokens);
+    setOwnedTokens(ownedTokens);
+    setTransfers(transporterTransfers);
+    setCollectedTokens(collectedTokens);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -113,114 +144,124 @@ const Transporter = () => {
       <LoadingOverlay loading={isLoading} />
 
       <Stack spacing={3}>
-        <Typography variant="h6" gutterBottom>
-          Tokens
-        </Typography>
+        <Summary
+          pendingTokens={pendingTokens.length}
+          ownedTokens={ownedTokens.length}
+          collectedTokens={collectedTokens.length}
+          transferedTokens={transfers.length}
+        />
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={3}
+        >
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader title="Tokens pendientes de recogida" />
+              <CardContent>
+                {pendingTokens.length ? (
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Nombre</TableCell>
+                          <TableCell>Ciudadano</TableCell>
+                          <TableCell>Cantidad</TableCell>
+                          <TableCell>Estado</TableCell>
+                          <TableCell align="right">Acción</TableCell>
+                        </TableRow>
+                      </TableHead>
 
-        {tokens.length ? (
-          <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Ciudadano</TableCell>
-                  <TableCell>Cantidad</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell align="right">Acción</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {tokens.map((t) => {
-                  const isPending = pendingTokenIds.has(t.id);
-
-                  return (
-                    <TableRow key={t.id} hover>
-                      <TableCell>{t.name}</TableCell>
-                      <TableCell>
-                        <AddressInfo label="" address={t.creator} />
-                      </TableCell>
-                      <TableCell>
-                        <QuantityInfo amount={t.totalSupply} />
-                      </TableCell>
-                      <TableCell>
-                        {t.stage === TokenStage.Created
-                          ? "Por recolectar"
-                          : t.stage === TokenStage.Collected
-                          ? "Recolectado"
-                          : t.stage}
-                      </TableCell>
-                      <TableCell align="right">
-                        {t.stage === TokenStage.Created ? (
-                          <Button
-                            variant="contained"
-                            startIcon={<ArrowInIcon />}
-                            onClick={() => handleCollect(t.id)}
-                          >
-                            Recoger
-                          </Button>
-                        ) : t.stage === TokenStage.Collected ? (
-                          <>
-                            {isPending ? (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Envío pendiente...
-                              </Typography>
-                            ) : (
-                              <Button
-                                variant="outlined"
-                                startIcon={<ArrowOutIcon />}
-                                onClick={() => handleTransfer(t.id)}
-                              >
-                                Enviar
-                              </Button>
-                            )}
-                          </>
-                        ) : null}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <EmptySection message="No hay tokens disponibles" />
-        )}
-
-        {transfers.length ? (
-          <Grid size={{ xs: 12 }}>
-            <Typography variant="h6" sx={{ mt: 4 }}>
-              Envíos pendientes de aceptación
-            </Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID Transfer</TableCell>
-                  <TableCell>Token ID</TableCell>
-                  <TableCell>Procesador</TableCell>
-                  <TableCell>Cantidad</TableCell>
-                  <TableCell>Estado</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transfers.map((tr) => (
-                  <TableRow key={tr.id}>
-                    <TableCell>{tr.id}</TableCell>
-                    <TableCell>{tr.tokenId}</TableCell>
-                    <TableCell>{tr.to.slice(0, 8)}…</TableCell>
-                    <TableCell>{tr.amount}</TableCell>
-                    <TableCell>🕓 Pendiente</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <TableBody>
+                        {pendingTokens.map((t) => {
+                          return (
+                            <TableRow key={t.id} hover>
+                              <TableCell>{t.name}</TableCell>
+                              <TableCell>
+                                <AddressInfo label="" address={t.creator} />
+                              </TableCell>
+                              <TableCell>
+                                <QuantityInfo amount={t.totalSupply} />
+                              </TableCell>
+                              <TableCell>
+                                {mapTokenStageToLabel[t.stage]}
+                              </TableCell>
+                              <TableCell align="right">
+                                <Button
+                                  variant="contained"
+                                  startIcon={<ArrowInIcon />}
+                                  onClick={() => handleCollect(t.id)}
+                                >
+                                  Recoger
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <EmptySection message="No hay tokens para recoger" />
+                )}
+              </CardContent>
+            </Card>
           </Grid>
-        ) : (
-          <EmptySection message="No hay transferencias disponibles" />
-        )}
+
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader title="Tokens en custodia" />
+              <CardContent>
+                <TokensTable tokens={ownedTokens} onClick={handleTransfer} />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        <Card>
+          <CardHeader title="Historial de tokens recogidos" />
+          <CardContent>
+            <TokensTable tokens={collectedTokens} enableActions={false} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="Historial de transferencias" />
+          <CardContent>
+            {transfers.length ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="h6" sx={{ mt: 4 }}>
+                  Envíos pendientes de aceptación
+                </Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>ID Transfer</TableCell>
+                      <TableCell>Token ID</TableCell>
+                      <TableCell>Procesador</TableCell>
+                      <TableCell>Cantidad</TableCell>
+                      <TableCell>Estado</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {transfers.map((tr) => (
+                      <TableRow key={tr.id}>
+                        <TableCell>{tr.id}</TableCell>
+                        <TableCell>{tr.tokenId}</TableCell>
+                        <TableCell>{tr.to.slice(0, 8)}…</TableCell>
+                        <TableCell>{tr.amount}</TableCell>
+                        <TableCell>🕓 Esperando centro procesamiento</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Grid>
+            ) : (
+              <EmptySection message="No hay transferencias disponibles" />
+            )}
+          </CardContent>
+        </Card>
       </Stack>
 
       {showTransferDialog && (

@@ -3,7 +3,12 @@ import { useMemo } from "react";
 import { useWallet } from "@context/metamask/provider";
 
 import { useContractInstance } from "./useContracts";
-import { ContractNames, ITokenTransfer, TransferStatus } from "../interfaces";
+import {
+  ContractNames,
+  ITokenInfo,
+  ITokenTransfer,
+  TransferStatus,
+} from "../interfaces";
 import { traceabilityServices } from "../services/traceabilityServices";
 
 export const useTraceability = () => {
@@ -77,18 +82,36 @@ export const useTraceability = () => {
     return service.processToken(tokenId, features);
   }
 
+  function rewardToken(tokenId: number, amount: number) {
+    if (!service) return Promise.resolve();
+    return service.rewardToken(tokenId, amount);
+  }
+
+  function getRewardedTokens(): Promise<ITokenInfo[]> {
+    if (!service) return Promise.resolve([]);
+    return service.getRewardedTokens();
+  }
+
+  function getCollectedTokens(): Promise<ITokenInfo[]> {
+    if (!service) return Promise.resolve([]);
+    return service.getCollectedTokens();
+  }
+
   return {
-    isServiceReady,
-    service,
-    getTokensByUser,
-    createToken,
-    getTokenHistory,
-    collectToken,
-    getAllTokens,
-    getTransfers,
-    transfer,
     acceptTransfer,
-    rejectTransfer,
+    collectToken,
+    createToken,
+    getAllTokens,
+    getCollectedTokens,
+    getRewardedTokens,
+    getTokenHistory,
+    getTokensByUser,
+    getTransfers,
+    isServiceReady,
     processToken,
+    rejectTransfer,
+    rewardToken,
+    service,
+    transfer,
   };
 };

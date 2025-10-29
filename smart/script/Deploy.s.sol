@@ -6,11 +6,13 @@ import {AccessManager} from "../src/AccessManager.sol";
 import {RecyclingTraceability} from "../src/RecyclingTraceability.sol";
 
 contract DeployScript is Script {
-    function run() external {
-        vm.startBroadcast();
+    uint256 adminPk = vm.envUint("ADMIN_PRIVATE_KEY");
+    address adminAddress = vm.envAddress("ADMIN_ADDRESS");
 
-        address admin = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; 
-        AccessManager access = new AccessManager(admin);
+    function run() external {
+        vm.startBroadcast(adminPk);
+
+        AccessManager access = new AccessManager(adminAddress);
 
         new RecyclingTraceability(address(access));
 

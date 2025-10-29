@@ -14,7 +14,12 @@ const AddressInfo = ({
         {label}
       </Typography>
     )}
-    <Chip variant="outlined" size="small" label={formatAddress(address)} />
+    <Chip
+      variant="filled"
+      size="small"
+      label={formatAddress(address)}
+      color="info"
+    />
   </Stack>
 );
 

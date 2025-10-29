@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 
 const EmptySection = ({ message = "" }) => (
@@ -6,14 +6,15 @@ const EmptySection = ({ message = "" }) => (
     sx={{
       width: "100%",
       textAlign: "center",
-      p: 4,
       opacity: 0.5,
     }}
   >
-    <NumbersOutlinedIcon />
-    <Typography variant="h6" sx={{ ml: 1 }}>
-      {message}
-    </Typography>
+    <Stack direction="row" alignItems="center" justifyContent="center">
+      <NumbersOutlinedIcon />
+      <Typography variant="body1" sx={{ ml: 1 }}>
+        {message}
+      </Typography>
+    </Stack>
   </Box>
 );
 

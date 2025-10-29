@@ -256,7 +256,9 @@
     "type": "function",
     "name": "rewardToken",
     "inputs": [
-      { "name": "tokenId", "type": "uint256", "internalType": "uint256" }
+      { "name": "tokenId", "type": "uint256", "internalType": "uint256" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" },
+      { "name": "rewardFeatures", "type": "string", "internalType": "string" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -353,12 +355,6 @@
         "type": "address",
         "indexed": true,
         "internalType": "address"
-      },
-      {
-        "name": "name",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -393,10 +389,28 @@
         "internalType": "uint256"
       },
       {
+        "name": "citizen",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
         "name": "authority",
         "type": "address",
         "indexed": true,
         "internalType": "address"
+      },
+      {
+        "name": "rewardFeatures",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
     "anonymous": false

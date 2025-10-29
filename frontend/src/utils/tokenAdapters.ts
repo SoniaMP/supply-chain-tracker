@@ -1,4 +1,9 @@
-import { ITokenHistoryEntry, ITokenInfo, ITokenTransfer } from "../interfaces";
+import {
+  ICollectedToken,
+  ITokenHistoryEntry,
+  ITokenInfo,
+  ITokenTransfer,
+} from "../interfaces";
 
 export function getUiTokenInfo(tokens: any[]): ITokenInfo[] {
   return tokens.map((token) => ({
@@ -36,4 +41,15 @@ export function getUiTokenTransfer(transfer: any): ITokenTransfer {
     status: Number(transfer.status),
     timestamp: Number(transfer.timestamp),
   };
+}
+
+export function getUiCollectedTokens(
+  collectedTokens: any[]
+): ICollectedToken[] {
+  return collectedTokens.map((token: any) => {
+    return {
+      id: Number(token.id),
+      address: token.transporter,
+    };
+  });
 }

@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  Box,
   Card,
-  Chip,
+  CardContent,
+  CardHeader,
   Container,
-  List,
-  ListItem,
-  ListItemAvatar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -14,15 +11,10 @@ import PeopleIcon from "@mui/icons-material/PeopleAltOutlined";
 
 import { useAccessManager } from "@hooks/useAccessManager";
 
-import {
-  AccountStatus,
-  IAccountInfo,
-  mapRoleToLabel,
-  mapStatusToLabel,
-} from "../../interfaces";
-import UserActions from "./UserActions";
+import { IAccountInfo } from "../../interfaces";
 import Summary from "./Summary";
 import LoadingOverlay from "../../layout/LoadingOverlay";
+import UsersTable from "./UsersTable";
 
 const AdminPanel = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -48,19 +40,6 @@ const AdminPanel = () => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isServiceReady]);
-
-  function getChipStatusColor(status: number) {
-    switch (status) {
-      case AccountStatus.Approved:
-        return "success";
-      case AccountStatus.Rejected:
-        return "error";
-      case AccountStatus.Pending:
-        return "warning";
-      default:
-        return "default";
-    }
-  }
 
   async function handleApprove(account: string) {
     try {
@@ -90,75 +69,44 @@ const AdminPanel = () => {
 
   return (
     <Container sx={{ py: 4 }} maxWidth="lg">
-      <Stack spacing={4}>
+      <LoadingOverlay loading={isLoading} />
+
+      <Stack spacing={3}>
+        <Stack spacing={1}>
+          <Typography variant="h5">Panel de Administración</Typography>
+
+          <Typography variant="body1">
+            Gestión de usuarios registrados en la plataforma
+          </Typography>
+        </Stack>
+
         <Summary accounts={accounts} />
 
-        <Card sx={{ p: 4 }}>
-          <LoadingOverlay loading={isLoading} />
-          <Stack spacing={1} alignItems="start">
-            <Stack direction="row" spacing={2} alignItems="center">
-              <PeopleIcon />
-              <Typography variant="h6">Gestión de usuarios</Typography>
+        <Card sx={{ p: 1 }}>
+          <CardHeader
+            title={
+              <Stack direction="row" spacing={2} alignItems="center">
+                <PeopleIcon />
+                <Typography variant="h6">Gestión de usuarios</Typography>
+              </Stack>
+            }
+          />
+
+          <CardContent>
+            <Stack spacing={1} alignItems="start">
+              <Typography variant="caption">
+                Permite controlar usuarios y gestionar sus permisos asociados
+              </Typography>
+
+              {accounts.length && (
+                <UsersTable
+                  accounts={accounts}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                />
+              )}
             </Stack>
-
-            <Typography variant="caption">
-              Permite controlar usuarios y gestionar sus permisos asociados
-            </Typography>
-
-            {accounts.length && (
-              <List sx={{ width: "100%" }} disablePadding>
-                {accounts.map(({ account, role, status }, idx: number) => (
-                  <ListItem key={account} sx={{ py: 0.5 }}>
-                    <Card
-                      sx={{
-                        p: 2,
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <PeopleIcon />
-                      </ListItemAvatar>
-                      <Stack spacing={1} alignItems="flex-start" width="100%">
-                        <Stack
-                          direction="row"
-                          spacing={2}
-                          alignItems="center"
-                          width="100%"
-                        >
-                          <Typography variant="body2">
-                            Usuario #{idx + 1}
-                          </Typography>
-                          <Chip
-                            label={mapRoleToLabel[role]}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                          <Chip
-                            label={mapStatusToLabel[status]}
-                            size="small"
-                            color={getChipStatusColor(status)}
-                          />
-                          <Box flexGrow={1} display="flex">
-                            <UserActions
-                              onApprove={() => handleApprove(account)}
-                              onReject={() => handleReject(account)}
-                            />
-                          </Box>
-                        </Stack>
-                        <Typography sx={{ fontFamily: "monospace" }}>
-                          {account}
-                        </Typography>
-                      </Stack>
-                    </Card>
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Stack>
+          </CardContent>
         </Card>
       </Stack>
     </Container>

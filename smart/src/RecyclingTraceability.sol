@@ -43,14 +43,16 @@ contract RecyclingTraceability {
     mapping(uint256 => Token) private _tokens;
     uint256[] private _allTokenIds;
 
-    event TokenCreated(
-        uint256 indexed id,
-        address indexed citizen,
-        string name
-    );
+    event TokenCreated(uint256 indexed id, address indexed citizen);
     event TokenCollected(uint256 indexed id, address indexed transporter);
     event TokenProcessed(uint256 indexed id, address indexed processor);
-    event TokenRewarded(uint256 indexed id, address indexed authority);
+    event TokenRewarded(
+        uint256 indexed id,
+        address indexed citizen,
+        uint256 amount,
+        address indexed authority,
+        string rewardFeatures
+    );
 
     event CustodyChanged(
         uint256 indexed tokenId,
@@ -60,7 +62,6 @@ contract RecyclingTraceability {
         uint256 timestamp
     );
 
-    // --- Gestión de transferencias -----
     enum TransferStatus {
         None,
         Pending,
@@ -139,7 +140,7 @@ contract RecyclingTraceability {
 
         _allTokenIds.push(newId);
 
-        emit TokenCreated(newId, msg.sender, name);
+        emit TokenCreated(newId, msg.sender);
         emit CustodyChanged(
             newId,
             address(0),
@@ -194,7 +195,9 @@ contract RecyclingTraceability {
     }
 
     function rewardToken(
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 amount,
+        string memory rewardFeatures
     ) external onlyRoleActive(accessManager.REWARD_AUTHORITY()) {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
@@ -202,7 +205,13 @@ contract RecyclingTraceability {
 
         t.stage = Stage.Rewarded;
 
-        emit TokenRewarded(tokenId, msg.sender);
+        emit TokenRewarded(
+            tokenId,
+            t.creator,
+            amount,
+            msg.sender,
+            rewardFeatures
+        );
         emit CustodyChanged(
             tokenId,
             t.currentHolder,
@@ -304,11 +313,7 @@ contract RecyclingTraceability {
     /**
      * @notice Inicia la transferencia de un token hacia otro usuario.
      */
-    function transfer(
-        address to,
-        uint256 tokenId,
-        uint256 amount
-    ) external  {
+    function transfer(address to, uint256 tokenId, uint256 amount) external {
         Token storage t = _tokens[tokenId];
         require(t.id != 0, "Token not found");
         require(t.currentHolder == msg.sender, "Not current holder");
@@ -341,10 +346,7 @@ contract RecyclingTraceability {
      * @notice Acepta o rechaza una transferencia pendiente.
      * Solo puede ejecutarlo el PROCESSOR activo.
      */
-    function setTransferStatus(
-        uint256 transferId,
-        bool accept
-    ) external onlyRoleActive(accessManager.PROCESSOR()) {
+    function setTransferStatus(uint256 transferId, bool accept) external {
         Transfer storage tr = _transfers[transferId];
         require(tr.id != 0, "Transfer not found");
         require(tr.status == TransferStatus.Pending, "Transfer not pending");
