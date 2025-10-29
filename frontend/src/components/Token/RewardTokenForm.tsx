@@ -8,28 +8,23 @@ import {
   TextField,
 } from "@mui/material";
 
-const RewardTokenForm = ({ open, onClose, onSubmit }: any) => {
-  const [address, setAddress] = useState<string>("");
+const RewardTokenForm = ({ account, open, onClose, onSubmit }: any) => {
   const [amount, setAmount] = useState<string>("");
+  const [features, setFeatures] = useState<string>("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const currentAddress = address.trim();
     const amt = String(amount).trim();
 
-    if (!currentAddress) {
-      alert("Dirección destino es obligatoria");
-      return;
-    }
     if (!amt) {
       alert("Cantidad es obligatoria");
       return;
     }
 
-    setAddress("");
     setAmount("");
-    onSubmit(currentAddress, Number(amt));
+    setFeatures("");
+    onSubmit(account, Number(amt), features);
   };
 
   return (
@@ -41,9 +36,8 @@ const RewardTokenForm = ({ open, onClose, onSubmit }: any) => {
           <TextField
             label="Dirección destino"
             name="to"
-            value={address}
-            onChange={(e: any) => setAddress(e.target.value)}
-            required
+            value={account}
+            disabled
             fullWidth
             margin="dense"
             placeholder="0x..."
@@ -59,6 +53,16 @@ const RewardTokenForm = ({ open, onClose, onSubmit }: any) => {
             margin="dense"
             type="number"
             placeholder="0.0"
+          />
+
+          <TextField
+            rows={4}
+            label="Características"
+            fullWidth
+            margin="normal"
+            value={features}
+            onChange={(e) => setFeatures(e.target.value)}
+            multiline
           />
         </DialogContent>
 

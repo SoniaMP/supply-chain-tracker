@@ -15,6 +15,7 @@ import { IAccountInfo } from "../../interfaces";
 import Summary from "./Summary";
 import LoadingOverlay from "../../layout/LoadingOverlay";
 import UsersTable from "./UsersTable";
+import SectionTitle from "@components/common/SectionTitle";
 
 const AdminPanel = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -68,17 +69,14 @@ const AdminPanel = () => {
   }
 
   return (
-    <Container sx={{ py: 4 }} maxWidth="lg">
+    <Container sx={{ py: 4 }} maxWidth="xl">
       <LoadingOverlay loading={isLoading} />
 
       <Stack spacing={3}>
-        <Stack spacing={1}>
-          <Typography variant="h5">Panel de Administración</Typography>
-
-          <Typography variant="body1">
-            Gestión de usuarios registrados en la plataforma
-          </Typography>
-        </Stack>
+        <SectionTitle
+          title="Resumen de cuentas"
+          infoText="Visualiza un resumen de las cuentas registradas y su estado"
+        />
 
         <Summary accounts={accounts} />
 

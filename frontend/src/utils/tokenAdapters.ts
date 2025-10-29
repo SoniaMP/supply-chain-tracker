@@ -1,5 +1,7 @@
 import {
   ICollectedToken,
+  IProcessedToken,
+  IRewardedToken,
   ITokenHistoryEntry,
   ITokenInfo,
   ITokenTransfer,
@@ -53,3 +55,26 @@ export function getUiCollectedTokens(
     };
   });
 }
+
+export function getUiProcessedToken(
+  processedTokens: IProcessedToken[]
+): IProcessedToken[] {
+  return processedTokens.map((token: any) => {
+    return {
+      id: Number(token.id),
+      processor: token.processor,
+    };
+  });
+}
+
+export const getUiRewardedToken = (
+  rewardedTokens: IRewardedToken[]
+): IRewardedToken[] => {
+  return rewardedTokens.map((token: IRewardedToken) => ({
+    id: Number(token.id),
+    citizen: token.citizen,
+    amount: Number(token.amount),
+    authority: token.authority,
+    rewardFeatures: token.rewardFeatures,
+  }));
+};

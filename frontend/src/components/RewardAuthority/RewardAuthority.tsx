@@ -13,6 +13,7 @@ import {
   Stack,
   Container,
   Chip,
+  Grid,
 } from "@mui/material";
 import AwardIcon from "@mui/icons-material/EmojiEventsOutlined";
 import AcceptIcon from "@mui/icons-material/ThumbUpAltOutlined";
@@ -25,6 +26,7 @@ import EmptySection from "@components/common/EmptySection";
 import AddressInfo from "@components/common/AddressInfo";
 import RewardTokenForm from "@components/Token/RewardTokenForm";
 import {
+  IRewardedToken,
   ITokenInfo,
   ITokenTransfer,
   mapTransferStatusToLabel,
@@ -32,6 +34,9 @@ import {
   TransferStatus,
 } from "../../interfaces";
 import LoadingOverlay from "../../layout/LoadingOverlay";
+import CardHeaderTitle from "@components/common/CardHeaderTitle";
+import SectionTitle from "@components/common/SectionTitle";
+import QuantityInfo from "@components/common/QuantityInfo";
 
 const RewardAuthority = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +46,7 @@ const RewardAuthority = () => {
     []
   );
   const [ownedTokens, setOwnedTokens] = useState<ITokenInfo[]>([]);
-  const [rewardedTokens, setRewardedTokens] = useState<ITokenInfo[]>([]);
+  const [rewardedTokens, setRewardedTokens] = useState<IRewardedToken[]>([]);
 
   const { account } = useWallet();
   const {
@@ -62,8 +67,6 @@ const RewardAuthority = () => {
       getAllTokens(),
       getRewardedTokens(),
     ]);
-
-    console.log("Rewarded tokens fetched:", rewardedTokens);
 
     const regulatorTokens = allTokens.filter(
       (t: ITokenInfo) =>
@@ -91,18 +94,22 @@ const RewardAuthority = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, isServiceReady]);
 
-  const handleReward = async (to: string, amount: number) => {
+  const handleReward = async (
+    to: string,
+    amount: number,
+    rewardFeatures: string
+  ) => {
     if (!rewardToken || tokenId === null) return;
 
     try {
       setIsLoading(true);
-      console.log("Rewarding citizen for token ID:", tokenId);
-      await rewardToken(tokenId, amount);
+      await rewardToken(tokenId, amount, rewardFeatures);
       await refresh();
     } catch (err) {
       console.error("Error rewarding citizen:", err);
     } finally {
       setIsLoading(false);
+      setShowTransferDialog(false);
     }
   };
 
@@ -140,116 +147,158 @@ const RewardAuthority = () => {
   }
 
   return (
-    <Container sx={{ py: 2 }} maxWidth="lg">
+    <Container sx={{ py: 2 }} maxWidth="xl">
       <LoadingOverlay loading={isLoading} />
-      <Stack spacing={4}>
-        <Card>
-          <CardHeader title="Tokens recibidos (pendientes de recompensa)" />
-          <CardContent>
-            {pendingTransfers.length === 0 && !isLoading ? (
-              <EmptySection message="No hay transferencias disponibles." />
-            ) : (
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <strong>ID</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Token</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Origen</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Destino</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Cantidad</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Estado</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Acciones</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pendingTransfers.map((transfer) => (
-                    <TableRow key={transfer.id}>
-                      <TableCell>#{transfer.id}</TableCell>
-                      <TableCell>Token #{transfer.tokenId}</TableCell>
-                      <TableCell>
-                        <AddressInfo address={transfer.from} />
-                      </TableCell>
-                      <TableCell>
-                        <AddressInfo address={transfer.to} />
-                      </TableCell>
-                      <TableCell align="center">{transfer.amount}</TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          size="small"
-                          color={
-                            transfer.status === 1
-                              ? "warning"
-                              : transfer.status === 2
-                              ? "success"
-                              : transfer.status === 3
-                              ? "error"
-                              : "default"
-                          }
-                          label={mapTransferStatusToLabel[transfer.status]}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        {transfer.status === 1 && (
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            justifyContent="center"
-                          >
-                            <Button
+
+      <Stack spacing={3}>
+        <SectionTitle
+          title="Gestión de Recompensas - Entidad Reguladora"
+          infoText="Gestiona las recompensas para los ciudadanos y revisa las transferencias de tokens pendientes."
+        />
+
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={3}
+        >
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Tokens recibidos (pendientes de recompensa)"
+                    helperText="Transferencias de tokens que has recibido y que están pendientes de recompensa."
+                  />
+                }
+              />
+              <CardContent>
+                {pendingTransfers.length === 0 && !isLoading ? (
+                  <EmptySection message="No hay transferencias disponibles." />
+                ) : (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>
+                          <strong>ID</strong>
+                        </TableCell>
+                        <TableCell>
+                          <strong>Token</strong>
+                        </TableCell>
+                        <TableCell>
+                          <strong>Origen</strong>
+                        </TableCell>
+                        <TableCell>
+                          <strong>Destino</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Cantidad</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Estado</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Acciones</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {pendingTransfers.map((transfer) => (
+                        <TableRow key={transfer.id}>
+                          <TableCell>#{transfer.id}</TableCell>
+                          <TableCell>Token #{transfer.tokenId}</TableCell>
+                          <TableCell>
+                            <AddressInfo address={transfer.from} />
+                          </TableCell>
+                          <TableCell>
+                            <AddressInfo address={transfer.to} />
+                          </TableCell>
+                          <TableCell align="center">
+                            {transfer.amount}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
                               size="small"
-                              variant="outlined"
-                              color="error"
-                              startIcon={<RejectIcon />}
-                              onClick={() => handleReject(transfer.id)}
-                            >
-                              Rechazar
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="primary"
-                              startIcon={<AcceptIcon />}
-                              onClick={() => handleAccept(transfer.id)}
-                            >
-                              Aceptar
-                            </Button>
-                          </Stack>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                              color={
+                                transfer.status === 1
+                                  ? "warning"
+                                  : transfer.status === 2
+                                  ? "success"
+                                  : transfer.status === 3
+                                  ? "error"
+                                  : "default"
+                              }
+                              label={mapTransferStatusToLabel[transfer.status]}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            {transfer.status === 1 && (
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                justifyContent="center"
+                              >
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<RejectIcon />}
+                                  onClick={() => handleReject(transfer.id)}
+                                >
+                                  Rechazar
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<AcceptIcon />}
+                                  onClick={() => handleAccept(transfer.id)}
+                                >
+                                  Aceptar
+                                </Button>
+                              </Stack>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Pendiente de emitir recompensa"
+                    helperText="Tokens que están listos para ser recompensados por el ciudadano correspondiente."
+                  />
+                }
+              />
+              <CardContent>
+                <TokensTable
+                  tokens={ownedTokens}
+                  label="Recompensar"
+                  startIcon={<AwardIcon />}
+                  onClick={handleShowTransferDialog}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         <Card>
-          <CardHeader title="Pendiente de emitir recompensa" />
-          <TokensTable
-            tokens={ownedTokens}
-            label="Recompensar"
-            startIcon={<AwardIcon />}
-            onClick={handleShowTransferDialog}
+          <CardHeader
+            title={
+              <CardHeaderTitle
+                title="Historial de tokens recompensados"
+                helperText="Lista de tokens que han sido recompensados por ti."
+              />
+            }
           />
-        </Card>
-
-        <Card>
-          <CardHeader title="Tokens recompensados" />
           <CardContent>
             {rewardedTokens.length === 0 ? (
               <Typography color="text.secondary">
@@ -260,19 +309,33 @@ const RewardAuthority = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
-                    <TableCell>Nombre</TableCell>
                     <TableCell>Ciudadano</TableCell>
-                    <TableCell>Fecha</TableCell>
+                    <TableCell>Cantidad</TableCell>
+                    <TableCell>Características</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rewardedTokens.map((t: any) => (
+                  {rewardedTokens.map((t: IRewardedToken) => (
                     <TableRow key={t.id}>
                       <TableCell>{t.id}</TableCell>
-                      <TableCell>{t.name}</TableCell>
-                      <TableCell>{t.creator}</TableCell>
                       <TableCell>
-                        {new Date(t.dateCreated * 1000).toLocaleDateString()}
+                        <AddressInfo label="" address={t.citizen} />
+                      </TableCell>
+                      <TableCell>
+                        <QuantityInfo amount={t.amount} />
+                      </TableCell>
+                      <TableCell>
+                        <pre
+                          style={{
+                            margin: 0,
+                            fontFamily:
+                              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                          }}
+                        >
+                          {t.rewardFeatures
+                            ? JSON.stringify(t.rewardFeatures, null, 2)
+                            : "N/A"}
+                        </pre>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -285,6 +348,7 @@ const RewardAuthority = () => {
 
       {showTransferDialog && (
         <RewardTokenForm
+          account={account}
           open={showTransferDialog}
           onClose={() => setShowTransferDialog(false)}
           onSubmit={handleReward}

@@ -5,6 +5,7 @@ import {
   CardHeader,
   Chip,
   Container,
+  Grid,
   Stack,
   Table,
   TableBody,
@@ -31,6 +32,9 @@ import {
 import { useWallet } from "@context/metamask/provider";
 import TransferTokenForm from "@components/Token/TransferTokenForm";
 import TokensTable from "@components/Token/TokensTable";
+import CardHeaderTitle from "@components/common/CardHeaderTitle";
+import Summary from "./Summary";
+import SectionTitle from "@components/common/SectionTitle";
 
 const Processor = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,11 +44,13 @@ const Processor = () => {
     []
   );
   const [ownedTokens, setOwnedTokens] = useState<ITokenInfo[]>([]);
+  const [processedTokens, setProcessedTokens] = useState<ITokenInfo[]>([]);
   const { account } = useWallet();
 
   const {
     acceptTransfer,
     rejectTransfer,
+    getProcessedTokens,
     getTransfers,
     getAllTokens,
     processToken,
@@ -55,9 +61,10 @@ const Processor = () => {
   const refresh = async () => {
     setIsLoading(true);
 
-    const [allTransfers, allTokens] = await Promise.all([
+    const [allTransfers, allTokens, processedTokens] = await Promise.all([
       getTransfers(),
       getAllTokens(),
+      getProcessedTokens(),
     ]);
 
     // Transfers pendientes de aceptación o rechazo por el procesador
@@ -75,6 +82,7 @@ const Processor = () => {
 
     setPendingTransfers(pendingTransfers);
     setOwnedTokens(collectedTokens);
+    setProcessedTokens(processedTokens);
 
     setIsLoading(false);
   };
@@ -142,110 +150,165 @@ const Processor = () => {
   }
 
   return (
-    <Container sx={{ py: 2 }} maxWidth="lg">
+    <Container sx={{ py: 2 }} maxWidth="xl">
       <LoadingOverlay loading={isLoading} />
+
       <Stack spacing={3}>
-        <Card>
-          <CardHeader title="Transferencias pendientes de aceptar" />
-          <CardContent>
-            {pendingTransfers.length === 0 && !isLoading ? (
-              <EmptySection message="No hay transferencias disponibles." />
-            ) : (
-              <TableContainer component={Card}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <strong>ID</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Token</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Origen</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Destino</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <strong>Cantidad</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <strong>Estado</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <strong>Acciones</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {pendingTransfers.map((transfer) => (
-                      <TableRow key={transfer.id}>
-                        <TableCell>#{transfer.id}</TableCell>
-                        <TableCell>Token #{transfer.tokenId}</TableCell>
-                        <TableCell>
-                          <AddressInfo address={transfer.from} />
-                        </TableCell>
-                        <TableCell>
-                          <AddressInfo address={transfer.to} />
-                        </TableCell>
-                        <TableCell align="center">{transfer.amount}</TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            size="small"
-                            color={
-                              transfer.status === 1
-                                ? "warning"
-                                : transfer.status === 2
-                                ? "success"
-                                : transfer.status === 3
-                                ? "error"
-                                : "default"
-                            }
-                            label={mapTransferStatusToLabel[transfer.status]}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          {transfer.status === 1 && (
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              justifyContent="center"
-                            >
-                              <Button
+        <SectionTitle
+          title="Centro de Procesamiento"
+          infoText="Gestiona las transferencias de tokens pendientes y procesa los tokens recogidos"
+        />
+
+        <Summary
+          pendingTokens={pendingTransfers.length}
+          ownedTokens={ownedTokens.length}
+          collectedTokens={processedTokens.length}
+        />
+
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={3}
+        >
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Transferencias pendientes de aceptar"
+                    helperText="Lista de tokens que están pendientes de ser aceptados o rechazados por el procesador."
+                  />
+                }
+              />
+              <CardContent>
+                {pendingTransfers.length === 0 && !isLoading ? (
+                  <EmptySection message="No hay transferencias disponibles." />
+                ) : (
+                  <TableContainer component={Card}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>
+                            <strong>ID</strong>
+                          </TableCell>
+                          <TableCell>
+                            <strong>Token</strong>
+                          </TableCell>
+                          <TableCell>
+                            <strong>Origen</strong>
+                          </TableCell>
+                          <TableCell>
+                            <strong>Destino</strong>
+                          </TableCell>
+                          <TableCell align="center">
+                            <strong>Cantidad</strong>
+                          </TableCell>
+                          <TableCell align="center">
+                            <strong>Estado</strong>
+                          </TableCell>
+                          <TableCell align="center">
+                            <strong>Acciones</strong>
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {pendingTransfers.map((transfer) => (
+                          <TableRow key={transfer.id}>
+                            <TableCell>#{transfer.id}</TableCell>
+                            <TableCell>Token #{transfer.tokenId}</TableCell>
+                            <TableCell>
+                              <AddressInfo address={transfer.from} />
+                            </TableCell>
+                            <TableCell>
+                              <AddressInfo address={transfer.to} />
+                            </TableCell>
+                            <TableCell align="center">
+                              {transfer.amount}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip
                                 size="small"
-                                variant="outlined"
-                                color="error"
-                                startIcon={<RejectIcon />}
-                                onClick={() => handleReject(transfer.id)}
-                              >
-                                Rechazar
-                              </Button>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="primary"
-                                startIcon={<AcceptIcon />}
-                                onClick={() => handleAccept(transfer.id)}
-                              >
-                                Aceptar
-                              </Button>
-                            </Stack>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </CardContent>
-        </Card>
+                                color={
+                                  transfer.status === 1
+                                    ? "warning"
+                                    : transfer.status === 2
+                                    ? "success"
+                                    : transfer.status === 3
+                                    ? "error"
+                                    : "default"
+                                }
+                                label={
+                                  mapTransferStatusToLabel[transfer.status]
+                                }
+                              />
+                            </TableCell>
+                            <TableCell align="center">
+                              {transfer.status === 1 && (
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  justifyContent="center"
+                                >
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<RejectIcon />}
+                                    onClick={() => handleReject(transfer.id)}
+                                  >
+                                    Rechazar
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<AcceptIcon />}
+                                    onClick={() => handleAccept(transfer.id)}
+                                  >
+                                    Aceptar
+                                  </Button>
+                                </Stack>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 6 }}>
+            <Card>
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Pendiente de procesar"
+                    helperText="Lista de tokens que están disponibles para ser procesados"
+                  />
+                }
+              />
+              <CardContent>
+                <TokensTable tokens={ownedTokens} onClick={handleTransfer} />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         <Card>
-          <CardHeader title="Pendiente de procesar" />
+          <CardHeader
+            title={
+              <CardHeaderTitle
+                title="Historial de tokens procesados"
+                helperText="Lista de tokens que han sido procesados por el procesador"
+              />
+            }
+          />
           <CardContent>
-            <TokensTable tokens={ownedTokens} onClick={handleTransfer} />
+            <TokensTable tokens={processedTokens} enableActions={false} />
           </CardContent>
         </Card>
       </Stack>

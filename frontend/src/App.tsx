@@ -3,8 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import RequestRole from "@components/UserAccess/RequestRole";
 import Login from "@components/UserAccess/Login";
 import DashboardRouter from "@components/Dashboard";
-import AdminPanel from "@components/Admin";
 import RouteLayout from "./layout/RouteLayout";
+import AdminPanel from "@components/Admin";
 
 const App = () => {
   return (

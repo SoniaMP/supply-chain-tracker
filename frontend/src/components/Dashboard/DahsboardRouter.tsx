@@ -4,15 +4,15 @@ import { useGlobal } from "@context/global/provider";
 import UnderRevision from "@components/UserAccess/UnderRevision";
 import RejectedAccount from "@components/UserAccess/RejectedAccount";
 import { AccountStatus, UserRole } from "../../interfaces";
-import Admin from "./components/Admin";
 import { CardLayout } from "../../layouts";
 import Transporter from "../Transporter";
 import Citizen from "../Citizen";
 import Processor from "../Processor";
 import RewardAuthority from "../RewardAuthority/RewardAuthority";
+import AdminPanel from "@components/Admin";
 
 const mappingRolesToComponents: { [key in UserRole]: React.FC } = {
-  [UserRole.ADMIN]: Admin,
+  [UserRole.ADMIN]: AdminPanel,
   [UserRole.CITIZEN]: Citizen,
   [UserRole.TRANSPORTER]: Transporter,
   [UserRole.PROCESSOR]: Processor,

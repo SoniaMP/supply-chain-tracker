@@ -18,6 +18,7 @@ const AddressInfo = ({
       variant="filled"
       size="small"
       label={formatAddress(address)}
+      sx={{ fontFamily: "monospace", fontSize: "0.75rem" }}
       color="info"
     />
   </Stack>

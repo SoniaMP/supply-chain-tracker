@@ -88,6 +88,19 @@ export interface ICollectedToken {
   address: string;
 }
 
+export interface IProcessedToken {
+  id: number;
+  processor: string;
+}
+
+export interface IRewardedToken {
+  id: number;
+  citizen: string;
+  amount: number;
+  authority: string;
+  rewardFeatures: string;
+}
+
 export interface INewTokenForm {
   name: string;
   total: number;

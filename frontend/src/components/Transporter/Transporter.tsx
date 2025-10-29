@@ -14,7 +14,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import ArrowInIcon from "@mui/icons-material/SouthEastOutlined";
 
@@ -29,11 +28,12 @@ import {
   ITokenTransfer,
   mapTokenStageToLabel,
   TokenStage,
-  TransferStatus,
 } from "../../interfaces";
 import TransferTokenForm from "../Token/TransferTokenForm";
 import TokensTable from "@components/Token/TokensTable";
 import Summary from "./Summary";
+import CardHeaderTitle from "@components/common/CardHeaderTitle";
+import SectionTitle from "@components/common/SectionTitle";
 
 const Transporter = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -63,11 +63,8 @@ const Transporter = () => {
       getCollectedTokens(),
     ]);
 
-    // Transfers activas (pendientes) creadas por el transportista
     const transporterTransfers = allTransfers.filter(
-      (tr: any) =>
-        tr.from.toLowerCase() === account?.toLowerCase() &&
-        tr.status === TransferStatus.Pending
+      (tr: any) => tr.from.toLowerCase() === account?.toLowerCase()
     );
 
     const activeTransferTokenIds = transporterTransfers.map(
@@ -90,7 +87,6 @@ const Transporter = () => {
       (t: ITokenInfo) => t.stage === TokenStage.Created
     );
 
-    console.log("Collected tokens for transporter:", collectedTokens);
     setPendingTokens(pendingTokens);
     setOwnedTokens(ownedTokens);
     setTransfers(transporterTransfers);
@@ -140,16 +136,22 @@ const Transporter = () => {
   }
 
   return (
-    <Container sx={{ py: 2 }} maxWidth="lg">
+    <Container sx={{ py: 2 }} maxWidth="xl">
       <LoadingOverlay loading={isLoading} />
 
       <Stack spacing={3}>
+        <SectionTitle
+          title="Panel de Transportista"
+          infoText="Gestiona los tokens que debes recoger y transferir"
+        />
+
         <Summary
           pendingTokens={pendingTokens.length}
           ownedTokens={ownedTokens.length}
           collectedTokens={collectedTokens.length}
           transferedTokens={transfers.length}
         />
+
         <Grid
           container
           justifyContent="space-between"
@@ -158,7 +160,14 @@ const Transporter = () => {
         >
           <Grid size={{ xs: 6 }}>
             <Card>
-              <CardHeader title="Tokens pendientes de recogida" />
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Tokens pendientes de recogida"
+                    helperText="Lista de tokens que están disponibles para ser recogidos"
+                  />
+                }
+              />
               <CardContent>
                 {pendingTokens.length ? (
                   <TableContainer component={Paper} variant="outlined">
@@ -211,7 +220,14 @@ const Transporter = () => {
 
           <Grid size={{ xs: 6 }}>
             <Card>
-              <CardHeader title="Tokens en custodia" />
+              <CardHeader
+                title={
+                  <CardHeaderTitle
+                    title="Tokens en custodia"
+                    helperText="Lista de tokens que están en custodia del transportista"
+                  />
+                }
+              />
               <CardContent>
                 <TokensTable tokens={ownedTokens} onClick={handleTransfer} />
               </CardContent>
@@ -220,46 +236,16 @@ const Transporter = () => {
         </Grid>
 
         <Card>
-          <CardHeader title="Historial de tokens recogidos" />
+          <CardHeader
+            title={
+              <CardHeaderTitle
+                title="Historial de tokens recogidos"
+                helperText="Lista de tokens que han sido recogidos por el transportista"
+              />
+            }
+          />
           <CardContent>
             <TokensTable tokens={collectedTokens} enableActions={false} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader title="Historial de transferencias" />
-          <CardContent>
-            {transfers.length ? (
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="h6" sx={{ mt: 4 }}>
-                  Envíos pendientes de aceptación
-                </Typography>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ID Transfer</TableCell>
-                      <TableCell>Token ID</TableCell>
-                      <TableCell>Procesador</TableCell>
-                      <TableCell>Cantidad</TableCell>
-                      <TableCell>Estado</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {transfers.map((tr) => (
-                      <TableRow key={tr.id}>
-                        <TableCell>{tr.id}</TableCell>
-                        <TableCell>{tr.tokenId}</TableCell>
-                        <TableCell>{tr.to.slice(0, 8)}…</TableCell>
-                        <TableCell>{tr.amount}</TableCell>
-                        <TableCell>🕓 Esperando centro procesamiento</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Grid>
-            ) : (
-              <EmptySection message="No hay transferencias disponibles" />
-            )}
           </CardContent>
         </Card>
       </Stack>

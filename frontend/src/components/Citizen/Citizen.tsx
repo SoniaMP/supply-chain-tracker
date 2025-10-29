@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-import { Container } from "@mui/material";
+import { Container, Stack } from "@mui/material";
 
 import { useTraceability } from "@hooks/useTraceability";
-import { INewTokenForm, ITokenInfo, UserRole } from "../../interfaces";
-import LoadingOverlay from "../../layout/LoadingOverlay";
 import CreateToken from "@components/Citizen/CreateToken";
 import EmptyToken from "@components/Token/EmptyToken";
 import TokenList from "@components/Token/TokenList";
 import TokenHistory from "@components/Token/TokenHistory";
+import { useWallet } from "@context/metamask/provider";
+import {
+  INewTokenForm,
+  IRewardedToken,
+  ITokenInfo,
+  TokenStage,
+  UserRole,
+} from "../../interfaces";
+import LoadingOverlay from "../../layout/LoadingOverlay";
+import Summary from "./Summary";
+import CitizenPanel from "./CitizenPanel";
+import SectionTitle from "@components/common/SectionTitle";
 
 const Citizen = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,15 +25,30 @@ const Citizen = () => {
   const [selectedToken, setSelectedToken] = useState<ITokenInfo | null>(null);
   const [showTokenSummary, setShowTokenSummary] = useState(false);
   const [tokens, setTokens] = useState<ITokenInfo[]>([]);
-  const { createToken, getTokensByUser, isServiceReady } = useTraceability();
+  const [rewardedTokens, setRewardedTokens] = useState<IRewardedToken[]>([]);
+
+  const rewards = rewardedTokens.reduce(
+    (total, token) => total + token.amount,
+    0
+  );
+
+  const {
+    createToken,
+    getTokensByUser,
+    getRewardedTokensByUser,
+    isServiceReady,
+  } = useTraceability();
+  const { account } = useWallet();
 
   useEffect(() => {
-    if (!isServiceReady) return;
-
     async function fetchData() {
       try {
         setIsLoading(true);
         const tokens = await getTokensByUser();
+        const rewardedTokens = await getRewardedTokensByUser(
+          account!.toLowerCase()
+        );
+        setRewardedTokens(rewardedTokens);
         setTokens(tokens);
       } catch (err) {
         alert(`Error al cargar los tokens: ${err}`);
@@ -32,9 +57,11 @@ const Citizen = () => {
       }
     }
 
-    fetchData();
+    if (isServiceReady && account) {
+      fetchData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isServiceReady]);
+  }, [account, isServiceReady]);
 
   async function handleCreateToken(newToken: INewTokenForm) {
     if (!newToken || !createToken) return;
@@ -57,17 +84,42 @@ const Citizen = () => {
 
   return (
     <>
-      <Container sx={{ py: 4 }} maxWidth="lg">
+      <Container sx={{ py: 4 }} maxWidth="xl">
         <LoadingOverlay loading={isLoading} />
-        {tokens.length ? (
-          <TokenList
-            tokens={tokens}
-            onAddToken={() => setShowCreateTokenForm(true)}
-            onViewDetails={handleViewTokenDetails}
+
+        <Stack spacing={3}>
+          <SectionTitle
+            title="Panel de Ciudadano"
+            infoText="Gestiona tus tokens y visualiza tus recompensas"
           />
-        ) : (
-          <EmptyToken onAddToken={() => setShowCreateTokenForm(true)} />
-        )}
+
+          <Summary
+            total={tokens.length}
+            pending={
+              tokens.filter(
+                (token) =>
+                  token.stage !== TokenStage.Created &&
+                  token.stage !== TokenStage.Rewarded
+              ).length
+            }
+            rewarded={
+              tokens.filter((token) => token.stage === TokenStage.Rewarded)
+                .length
+            }
+          />
+
+          <CitizenPanel account={account!} redeemable={rewards} />
+
+          {tokens.length ? (
+            <TokenList
+              tokens={tokens}
+              onAddToken={() => setShowCreateTokenForm(true)}
+              onViewDetails={handleViewTokenDetails}
+            />
+          ) : (
+            <EmptyToken onAddToken={() => setShowCreateTokenForm(true)} />
+          )}
+        </Stack>
       </Container>
       {showCreateTokenForm && (
         <CreateToken

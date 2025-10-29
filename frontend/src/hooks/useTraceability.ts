@@ -5,6 +5,7 @@ import { useWallet } from "@context/metamask/provider";
 import { useContractInstance } from "./useContracts";
 import {
   ContractNames,
+  IRewardedToken,
   ITokenInfo,
   ITokenTransfer,
   TransferStatus,
@@ -82,12 +83,16 @@ export const useTraceability = () => {
     return service.processToken(tokenId, features);
   }
 
-  function rewardToken(tokenId: number, amount: number) {
+  function rewardToken(
+    tokenId: number,
+    amount: number,
+    rewardFeatures: string
+  ) {
     if (!service) return Promise.resolve();
-    return service.rewardToken(tokenId, amount);
+    return service.rewardToken(tokenId, amount, rewardFeatures);
   }
 
-  function getRewardedTokens(): Promise<ITokenInfo[]> {
+  function getRewardedTokens(): Promise<IRewardedToken[]> {
     if (!service) return Promise.resolve([]);
     return service.getRewardedTokens();
   }
@@ -97,13 +102,29 @@ export const useTraceability = () => {
     return service.getCollectedTokens();
   }
 
+  async function getRewardedTokensByUser(
+    account: string
+  ): Promise<IRewardedToken[]> {
+    const rewardedTokens = await getRewardedTokens();
+    return rewardedTokens.filter(
+      (t) => t.citizen.toLowerCase() === account.toLowerCase()
+    );
+  }
+
+  async function getProcessedTokens(): Promise<ITokenInfo[]> {
+    if (!service) return Promise.resolve([]);
+    return service.getProcessedTokens();
+  }
+
   return {
     acceptTransfer,
     collectToken,
     createToken,
     getAllTokens,
     getCollectedTokens,
+    getProcessedTokens,
     getRewardedTokens,
+    getRewardedTokensByUser,
     getTokenHistory,
     getTokensByUser,
     getTransfers,

@@ -1,11 +1,15 @@
 import {
   getUiCollectedTokens,
+  getUiProcessedToken,
+  getUiRewardedToken,
   getUiTokenHistoryEntry,
   getUiTokenInfo,
   getUiTokenTransfer,
 } from "@utils/tokenAdapters";
 import {
   ICollectedToken,
+  IProcessedToken,
+  IRewardedToken,
   ITokenHistoryEntry,
   ITokenInfo,
   TransferStatus,
@@ -156,9 +160,13 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
-  async function rewardToken(tokenId: number, amount: number): Promise<void> {
+  async function rewardToken(
+    tokenId: number,
+    amount: number,
+    rewardFeatures: string
+  ): Promise<void> {
     try {
-      const tx = await contract.rewardToken(tokenId, amount);
+      const tx = await contract.rewardToken(tokenId, amount, rewardFeatures);
       const receipt = await tx.wait();
 
       if (receipt.status !== 1) {
@@ -189,13 +197,32 @@ export const traceabilityServices = (contract: any) => {
     }
   }
 
-  async function getRewardedTokens(): Promise<ITokenInfo[]> {
+  async function getProcessedTokens(): Promise<ITokenInfo[]> {
+    try {
+      const filter = contract.filters.TokenProcessed();
+      const events = await contract.queryFilter(filter, 0, "latest");
+      const allTokens = await getAllTokens();
+      const processed = events.map(
+        ({ args }: { args: IProcessedToken }) => getUiProcessedToken([args])[0]
+      );
+      const filteredTokens = allTokens.filter((token: ITokenInfo) =>
+        processed.some(
+          (processedToken: IProcessedToken) => processedToken.id === token.id
+        )
+      );
+      return filteredTokens;
+    } catch (err) {
+      console.error("Error getting processed tokens by user:", err);
+      return [];
+    }
+  }
+
+  async function getRewardedTokens(): Promise<IRewardedToken[]> {
     try {
       const filter = contract.filters.TokenRewarded();
       const events = await contract.queryFilter(filter, 0, "latest");
-      // const filteredTokens
       return events.map(
-        ({ args }: { args: ITokenInfo }) => getUiCollectedTokens([args])[0]
+        ({ args }: { args: IRewardedToken }) => getUiRewardedToken([args])[0]
       );
     } catch (err) {
       console.error("Error getting rewarded tokens by user:", err);
@@ -209,6 +236,7 @@ export const traceabilityServices = (contract: any) => {
     createToken,
     getAllTokens,
     getCollectedTokens,
+    getProcessedTokens,
     getRewardedTokens,
     getTokenHistory,
     getTokensByUser,
