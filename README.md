@@ -1,4 +1,4 @@
-# ♻️ Recycling Traceability – Proyecto de Trazabilidad Blockchain
+# ♻️ EcoTrack – Proyecto de Trazabilidad Blockchain
 
 ## 🧩 Descripción del proyecto
 
@@ -86,17 +86,18 @@ Registra toda la trazabilidad de los tokens de reciclaje y su movimiento entre e
 ### 1️⃣ Clonar el repositorio
 ```bash
 git clone https://github.com/tuusuario/recycling-traceability.git
-cd recycling-traceability
+cd supply-chain-tracker
 ```
 
 ### 2️⃣ Instalar dependencias de Foundry
 ```bash
+cd smart
 forge install
 ```
 
 ### 3️⃣ Instalar dependencias del frontend
 ```bash
-cd dapp
+cd frontend
 npm install
 ```
 
@@ -122,6 +123,8 @@ forge create src/AccessManager.sol:AccessManager   --rpc-url http://127.0.0.1:85
 # Desplegar RecyclingTraceability con la dirección del AccessManager
 forge create src/RecyclingTraceability.sol:RecyclingTraceability   --rpc-url http://127.0.0.1:8545   --private-key <PRIVATE_KEY_ADMIN>   --constructor-args <ACCESS_MANAGER_ADDRESS>
 ```
+
+También se pueden usar los script `Deploy.s.sol` y `InitalizeRoles.s.sol` tanto para desplegar como para inicializar los roles de la aplicación.
 
 ---
 
@@ -199,16 +202,17 @@ cast call <ACCESS_MANAGER_ADDRESS> "getAccountInfo(address)" <USER_ADDRESS>
 
 Lanzar la interfaz de React:
 ```bash
-cd dapp
-npm run dev
+cd frontend
+npm start
 ```
 
 Incluye componentes:
 - `RegisterOrganization` (roles)
-- `AddEvent` / `AddEventsBatch` (historial)
+- `Admin.jsx` (panel gestión de usuarios por un administrador)
+- `Citizen.jsx` (menú del ciudadano -- Para crear tokens y ver el resumen de recompensas)
 - `Transporter.jsx` (gestión de envíos)
 - `Processor.jsx` (procesado y envío a autoridad)
-- `Authority.jsx` (recompensa final)
+- `RewardAuthority.jsx` (recompensa final)
 
 ---
 
@@ -221,4 +225,4 @@ Incluye componentes:
 
 ---
 
-> 🚀 “Nada se pierde, todo se transforma. Pero en esta DApp, además, ¡todo se rastrea!”
+> 🚀 El lema de EcoTrack... “Nada se pierde, todo se transforma. Pero en esta DApp, además, ¡todo se rastrea!”
